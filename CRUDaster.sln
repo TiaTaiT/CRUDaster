@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.14.36203.30 d17.14
+VisualStudioVersion = 17.14.36203.30
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CRUDaster", "CRUDaster\CRUDaster.csproj", "{67FAD0A3-9ACF-4B45-A4C3-FF3252E8EC13}"
 EndProject
@@ -9,7 +9,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CRUDaster.Core", "CRUDaster
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CRUDaster.Infrastructure", "CRUDaster.Infrastructure", "{1E305455-F879-4BA1-8E74-1B4B010CD961}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CRDaster.Presentation", "CRDaster.Presentation", "{57508471-246B-4A0D-836A-9DFB9C17F69B}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CRUDaster.Presentation", "CRUDaster.Presentation", "{57508471-246B-4A0D-836A-9DFB9C17F69B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CRUDaster.Core", "CRUDaster.Core\CRUDaster.Core.csproj", "{5548A8B7-385C-45E5-8121-05CC9A05C2A8}"
 EndProject

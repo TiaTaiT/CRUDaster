@@ -1,0 +1,93 @@
+﻿@page "/pim"
+@inject PimRepository ItemService
+@using CRUDaster.Core.Domain.Entities
+@using CRUDaster.Infrastructure.Data.Repositories
+
+@using MudBlazor
+
+<PageTitle>Items</PageTitle>
+
+<MudPaper Class="p-4">
+    <MudText Typo="Typo.h5">Item Manager</MudText>
+    <MudButton Color="Color.Primary" OnClick="OpenCreateDialog" Class="my-2">Add Item</MudButton>
+
+    <MudTable Items="_items" Hover="true">
+        <HeaderContent>
+            <MudTh>Name</MudTh>
+            <MudTh>Description</MudTh>
+            <MudTh>Actions</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd>@context.Name</MudTd>
+            <MudTd>@context.Description</MudTd>
+            <MudTd>
+                <MudIconButton Icon="@Icons.Material.Filled.Edit" OnClick="@(() => EditItem(context))" />
+                <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="@(() => DeleteItem(context))" />
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
+</MudPaper>
+
+<MudDialog @bind-IsOpen="_isDialogOpen">
+    <DialogContent>
+        <MudTextField @bind-Value="_editingItem.Name" Label="Name" Required="true" />
+        <MudTextField @bind-Value="_editingItem.Description" Label="Description" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="SaveItem" Color="Color.Primary">Save</MudButton>
+        <MudButton OnClick="CloseDialog">Cancel</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private List<Pim> _items = new();
+    private Pim _editingItem = new();
+    private bool _isDialogOpen = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadItems();
+    }
+
+    private async Task LoadItems()
+    {
+        var items = await ItemService.GetAllAsync();
+        _items = items.ToList();
+    }
+
+    private void OpenCreateDialog()
+    {
+        _editingItem = new();
+        _isDialogOpen = true;
+    }
+
+    private void EditItem(Pim item)
+    {
+        _editingItem = new Pim
+        {
+            Id = item.Id,
+            Name = item.Name,
+            Description = item.Description
+        };
+        _isDialogOpen = true;
+    }
+
+    private async Task SaveItem()
+    {
+        if (_editingItem.Id == 0)
+            await ItemService.AddAsync(_editingItem);
+        else
+            await ItemService.UpdateAsync(_editingItem);
+
+        _isDialogOpen = false;
+        await LoadItems();
+    }
+
+    private void CloseDialog() => _isDialogOpen = false;
+
+    private async Task DeleteItem(Pim id)
+    {
+        await ItemService.DeleteAsync(id);
+        await LoadItems();
+    }
+}
