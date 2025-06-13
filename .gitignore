@@ -362,3 +362,5 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 /CRUDaster/appsettings.json
+/CRUDaster/appsettings.Development.json
+/CRUDaster/appsettings.Production.json
