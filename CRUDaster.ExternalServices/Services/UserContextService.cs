@@ -6,18 +6,34 @@ namespace CRUDaster.ExternalServices.Services
 {
     public class UserContextService(IHttpContextAccessor httpContextAccessor) : IUserContextService
     {
-        private readonly IHttpContextAccessor? _httpContextAccessor = httpContextAccessor;
+        private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
 
-        public Task<string> GetUserIdAsync()
+        public string? GetUserId()
         {
-            var user = _httpContextAccessor.HttpContext?.User;
-            // Using ClaimTypes.NameIdentifier (or "sub" depending on your token)
-            var userIdStr = user?.FindFirst(ClaimTypes.NameIdentifier) ?.Value;
-            if (userIdStr == null || userIdStr == string.Empty)
-            {
-                throw new UnauthorizedAccessException();
-            }
-            return Task.FromResult(userIdStr);
+            return _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        }
+
+        public string? GetUserName()
+        {
+            return _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.Name)?.Value
+                   ?? _httpContextAccessor.HttpContext?.User?.FindFirst("name")?.Value;
+        }
+
+        public string? GetUserEmail()
+        {
+            return _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.Email)?.Value
+                   ?? _httpContextAccessor.HttpContext?.User?.FindFirst("email")?.Value;
+        }
+
+        public bool IsInRole(string role)
+        {
+            return _httpContextAccessor.HttpContext?.User?.IsInRole(role) ?? false;
+        }
+
+        public IEnumerable<string> GetUserRoles()
+        {
+            return _httpContextAccessor.HttpContext?.User?.FindAll(ClaimTypes.Role)
+                   .Select(c => c.Value) ?? Enumerable.Empty<string>();
         }
     }
 }

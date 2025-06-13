@@ -1,4 +1,6 @@
-﻿using CRUDaster.Core.Application.Interfaces.Repositories;
+﻿using CRUDaster.Core.Application.Interfaces.DtoServices;
+using CRUDaster.Core.Application.Interfaces.Repositories;
+using CRUDaster.Core.Application.Services;
 using CRUDaster.Infrastructure.Data;
 using CRUDaster.Infrastructure.Data.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -28,6 +30,8 @@ namespace CRUDaster.Infrastructure.Extensions
             services.AddScoped<IBrandRepository, BrandRepository>();
             services.AddScoped<IDocumentRepository, DocumentRepository>();
             services.AddScoped<IPimRepository, PimRepository>();
+
+            services.AddScoped<IHardwareService, HardwareService>();
 
             return services;
         }

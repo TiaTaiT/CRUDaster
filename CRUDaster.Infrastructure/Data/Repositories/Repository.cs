@@ -9,7 +9,7 @@ namespace CRUDaster.Infrastructure.Data.Repositories
 
         public override async Task<T> AddAsync(T entity)
         {
-            var userId = await _userContext.GetUserIdAsync();
+            var userId = _userContext.GetUserId() ?? throw new Exception("User Id is unknow!");
             entity.CreatorId = userId;
             entity.CreatedAt = DateTime.UtcNow;
             var createdItem = await base.AddAsync(entity);
@@ -20,7 +20,7 @@ namespace CRUDaster.Infrastructure.Data.Repositories
 
         public override async Task UpdateAsync(T entity)
         {
-            var userId = await _userContext.GetUserIdAsync();
+            var userId = _userContext.GetUserId() ?? throw new Exception("User Id is unknow!");
             entity.UpdaterId = userId;
             entity.UpdatedAt = DateTime.UtcNow;
             await base.UpdateAsync(entity);

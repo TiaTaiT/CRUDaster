@@ -1,5 +1,41 @@
-﻿<h3>Login</h3>
+﻿@using CRUDaster.Core.Application.Interfaces
+@inject NavigationManager Navigation
+@inject IUserContextService CurrentUser
+
+<MudText >@Username</MudText>
+<MudSpacer/>
+<AuthorizeView>
+    <Authorized>
+        <MudButton Variant="Variant.Filled" Color="Color.Secondary" @onclick="HandleLogout">Log out</MudButton>
+    </Authorized>
+    <NotAuthorized>
+        <MudButton Variant="Variant.Filled" Color="Color.Info" @onclick="HandleLogin">Log in</MudButton>
+    </NotAuthorized>
+</AuthorizeView>
 
 @code {
+    private string Username = "";
 
+    [CascadingParameter]
+    private Task<AuthenticationState>? authenticationState { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (authenticationState is not null)
+        {
+            var state = await authenticationState;
+
+            Username = state?.User?.Identity?.Name ?? string.Empty;
+        }
+    }
+
+    private async Task HandleLogin()
+    {
+        Navigation.NavigateTo("Account/Login", true);
+    }
+
+    private async Task HandleLogout()
+    {
+        Navigation.NavigateTo("Account/Logout", true);
+    }
 }
