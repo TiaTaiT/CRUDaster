@@ -1,0 +1,104 @@
+﻿@page "/document-crud"
+@inherits BaseEntityPage<DocumentDto, IDocumentService>
+@using CRUDaster.Core.Application.DTOs
+@using CRUDaster.Core.Application.Interfaces.DtoServices
+@using Configaster.Core.Application.DTOs
+@using Configaster.Core.Application.Interfaces.DtoServices
+@using Configaster.Shared.Components.Document
+
+@inject IDocumentService DocumentService
+@inject NavigationManager NavigationManager
+
+<MudContainer MaxWidth="MaxWidth.Medium">
+    <MudText Typo="Typo.h4" GutterBottom="true">Document</MudText>
+
+    <MudPaper Class="pa-4 mb-4">
+        <MudGrid>
+            <MudItem xs="12" md="6">
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           StartIcon="@Icons.Material.Filled.Add"
+                           OnClick="@(() => ShowCreateDialog<DocumentDialog>("Create Item"))"
+                           Class="mb-4">
+                    Add New Functionality
+                </MudButton>
+            </MudItem>
+            <MudItem xs="12" md="6" Class="d-flex justify-end">
+                <MudTextField @bind-Value="SearchString"
+                              Placeholder="Search"
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Filled.Search"
+                              IconSize="Size.Medium"
+                              Class="mt-0"
+                              Immediate="true" />
+            </MudItem>
+        </MudGrid>
+    </MudPaper>
+
+    @if (Loading)
+    {
+        <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+    }
+    else if (Items == null || !Items.Any())
+    {
+        <MudAlert Severity="Severity.Info">No functionalities found.</MudAlert>
+    }
+    else
+    {
+        <MudTable Items="@Items"
+                  Dense="true"
+                  Hover="true"
+                  Bordered="true"
+                  Striped="true"
+                  Filter="FilterFunc"
+                  Loading="@Loading">
+            <ColGroup>
+                <col style="width: 40px;" />
+                <col style="width: 100%;" />
+                <col style="width: 30px;" />
+            </ColGroup>
+            <HeaderContent>
+                <MudTh>ID</MudTh>
+                <MudTh>Name</MudTh>
+                <MudTh>Actions</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="ID">@context.Id</MudTd>
+                <MudTd DataLabel="Name">@context.Name</MudTd>
+
+                <MudTd>
+                    <MudStack Row="true" Spacing="1">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                       Color="Color.Primary"
+                                       Size="Size.Small"
+                                       Title="Edit"
+                                       OnClick="@(() => ShowEditDialog<DocumentDialog>("Edit Item", context.Id))" />
+
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                       Color="Color.Error"
+                                       Size="Size.Small"
+                                       Title="Delete"
+                                       OnClick="@(() =>
+                                            ShowDeleteDialog(
+                                                context.Name,
+                                                context.Id,
+                                                () => EntityService.DeleteAsync(context.Id)
+                                            )
+                                        )" />
+                </MudStack>
+            </MudTd>
+        </RowTemplate>
+        <PagerContent>
+            <MudTablePager />
+        </PagerContent>
+    </MudTable>
+        }
+</MudContainer>
+
+@code {
+    protected override bool FilterFunc(DocumentDto dto)
+    {
+        return string.IsNullOrWhiteSpace(SearchString)
+            || dto.Name.Contains(SearchString, StringComparison.OrdinalIgnoreCase);
+    }
+}

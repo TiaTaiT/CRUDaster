@@ -1,0 +1,140 @@
+﻿@using System.Diagnostics
+@using System.Text.Json
+@using CRUDaster.Core.Application.DTOs
+@using CRUDaster.Core.Application.Interfaces
+@using CRUDaster.Core.Application.Interfaces.DtoServices
+@using CRUDaster.Core.Application.Services
+@using CRUDaster.Comparers
+@inject IHardwareService HardwareService
+@inject IFunctionalityService FunctionalityService
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <DialogContent>
+        <MudForm @ref="_form" @bind-IsValid="@_isValid">
+            <MudGrid>
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="_serial"
+                                  Label="Serial Number"
+                                  Required="true"
+                                  RequiredError="Description is required"
+                                  MaxLength="100" />
+                </MudItem>
+
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="_description"
+                                  Label="Description"
+                                  Required="true"
+                                  RequiredError="Description is required"
+                                  MaxLength="100" />
+                </MudItem>
+
+                <MudItem xs="12">
+                    <MudSelect T="FunctionalityDto"
+                               Label="Functionalities"
+                               @bind-SelectedValues="_selectedFunctionalities"
+                               MultiSelection="true"
+                               ToStringFunc="f => f.Name"
+                               Comparer="new PropertyEqualityComparer<FunctionalityDto, int>(f => f.Id)">
+                        @foreach (var functionality in _allFunctionalities)
+                        {
+                            <MudSelectItem Value="@functionality">@functionality.Name</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+            </MudGrid>
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary"
+                   Disabled="@(!_isValid || _processing)"
+                   OnClick="Submit">
+            @if (_processing)
+            {
+                <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                <MudText Class="ms-2">Processing</MudText>
+            }
+            else
+            {
+                @(_isEdit ? "Update" : "Create")
+            }
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; }
+    [Parameter] public int? ItemId { get; set; }
+
+    private MudForm _form;
+    private bool _isValid;
+    private bool _processing;
+    private bool _isEdit => ItemId.HasValue;
+
+    private string _serial = "";
+    private string _description = "";
+    private IEnumerable<FunctionalityDto> _selectedFunctionalities = new List<FunctionalityDto>();
+    private IEnumerable<FunctionalityDto> _allFunctionalities = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _allFunctionalities = await FunctionalityService.GetAllAsync();
+            if (_isEdit && ItemId.HasValue)
+            {
+                var hardware = await HardwareService.GetByIdAsync(ItemId.Value);
+                if (hardware != null)
+                {
+                    _serial = hardware.Serial;
+                    _description = hardware.Description;
+                    _allFunctionalities = await FunctionalityService.GetAllAsync();
+
+                    _selectedFunctionalities = _allFunctionalities
+                        .Where(f => hardware.Functionalities.Any(hf => hf.Id == f.Id))
+                        .ToHashSet(new PropertyEqualityComparer<FunctionalityDto, int>(f => f.Id));
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error loading: {ex.Message}", Severity.Error);
+            Cancel();
+        }
+    }
+
+    private async Task Submit()
+    {
+        _processing = true;
+
+        try
+        {
+            var _selectedFunctionalityIds = _selectedFunctionalities.Select(f => f.Id);
+            if (_isEdit)
+            {
+                // Update existing hardware
+                await HardwareService.UpdateAsync(new HardwareUpdateDto(ItemId ?? 0, _serial, _description, _selectedFunctionalityIds));
+            }
+            else
+            {
+                // Create new product
+                var createModel = new HardwareCreateDto(_serial, _description, _selectedFunctionalityIds);
+
+                await HardwareService.CreateAsync(createModel);
+            }
+
+            MudDialog.Close(DialogResult.Ok(true));
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error saving product: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _processing = false;
+        }
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+}

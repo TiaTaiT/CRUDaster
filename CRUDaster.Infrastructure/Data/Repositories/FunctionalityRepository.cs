@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CRUDaster.Infrastructure.Data.Repositories
 {
-    public class FunctionalityRepository(ApplicationDbContext context) : RepositoryBase<Functionality>(context), IFunctionalityRepository
+    public class FunctionalityRepository(ApplicationDbContext context) : Repository<Functionality>(context), IFunctionalityRepository
     {
         /// <summary>
         /// Returns all Hardwares, including their associated Functionalities.

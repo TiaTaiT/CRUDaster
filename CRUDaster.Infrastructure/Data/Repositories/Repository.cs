@@ -1,32 +1,50 @@
-﻿using CRUDaster.Core.Application.Interfaces;
-using CRUDaster.Core.Domain.Entities;
+﻿using CRUDaster.Core.Application.Interfaces.Repositories;
+using Microsoft.EntityFrameworkCore;
 
 namespace CRUDaster.Infrastructure.Data.Repositories
 {
-    public class Repository<T>(ApplicationDbContext context, IUserContextService userContext) : RepositoryBase<T>(context) where T : CreatorUpdaterBase
+    public class Repository<T> : IRepository<T> where T : class
     {
-        private readonly IUserContextService _userContext = userContext;
+        protected readonly ApplicationDbContext _context;
+        protected readonly DbSet<T> _dbSet;
 
-        public override async Task<T> AddAsync(T entity)
+        public Repository(ApplicationDbContext context)
         {
-            var userId = _userContext.GetUserId() ?? throw new Exception("User Id is unknow!");
-            entity.CreatorId = userId;
-            entity.CreatedAt = DateTime.UtcNow;
-            var createdItem = await base.AddAsync(entity);
-            await SaveChangesAsync();
-
-            return createdItem;
+            _context = context;
+            _dbSet = context.Set<T>();
         }
 
-        public override async Task UpdateAsync(T entity)
+        public virtual async Task<IEnumerable<T>> GetAllAsync()
         {
-            var userId = _userContext.GetUserId() ?? throw new Exception("User Id is unknow!");
-            entity.UpdaterId = userId;
-            entity.UpdatedAt = DateTime.UtcNow;
-            await base.UpdateAsync(entity);
-            await SaveChangesAsync();
+            return await _dbSet.ToListAsync();
+        }
 
-            return;
+        public virtual async Task<T?> GetByIdAsync(int id)
+        {
+            return await _dbSet.FindAsync(id);
+        }
+
+        public virtual async Task<T> AddAsync(T entity)
+        {
+            await _dbSet.AddAsync(entity);
+            return entity;
+        }
+
+        public virtual Task UpdateAsync(T entity)
+        {
+            _dbSet.Update(entity);
+            return Task.CompletedTask;
+        }
+
+        public virtual Task DeleteAsync(T entity)
+        {
+            _dbSet.Remove(entity);
+            return Task.CompletedTask;
+        }
+
+        public async Task SaveChangesAsync()
+        {
+            await _context.SaveChangesAsync();
         }
     }
 }

@@ -22,7 +22,7 @@ namespace CRUDaster.Infrastructure.Extensions
                     b => b.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName)));
 
             // Register repositories
-            services.AddScoped(typeof(IRepository<>), typeof(RepositoryBase<>));
+            //services.AddScoped(typeof(IRepository<>), typeof(RepositoryBase<>));
             services.AddScoped<IProductRepository, ProductRepository>();
             services.AddScoped<IDraftRepository, DraftRepository>();
             services.AddScoped<IHardwareRepository, HardwareRepository>();
@@ -32,6 +32,7 @@ namespace CRUDaster.Infrastructure.Extensions
             services.AddScoped<IPimRepository, PimRepository>();
 
             services.AddScoped<IHardwareService, HardwareService>();
+            services.AddScoped<IFunctionalityService, FunctionalityService>();
 
             return services;
         }

@@ -5,7 +5,7 @@ using CRUDaster.Core.Domain.Entities;
 
 namespace CRUDaster.Infrastructure.Data.Repositories
 {
-    public class PimRepository(ApplicationDbContext appContext, IUserContextService userContext) : Repository<Pim>(appContext, userContext), IPimRepository
+    public class PimRepository(ApplicationDbContext context) : Repository<Pim>(context), IPimRepository
     {
     }
 }

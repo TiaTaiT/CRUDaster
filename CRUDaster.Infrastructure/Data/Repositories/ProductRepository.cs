@@ -4,7 +4,7 @@ using CRUDaster.Core.Domain.Entities;
 
 namespace CRUDaster.Infrastructure.Data.Repositories
 {
-    public class ProductRepository : RepositoryBase<Product>, IProductRepository
+    public class ProductRepository : Repository<Product>, IProductRepository
     {
         public ProductRepository(ApplicationDbContext context) : base(context)
         {

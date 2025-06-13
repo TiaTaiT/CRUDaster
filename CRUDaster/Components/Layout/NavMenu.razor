@@ -2,6 +2,9 @@
     <MudNavLink Href="/" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">Dashboard</MudNavLink>
     <MudNavLink Href="/counter" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Add">Google spreadsheets</MudNavLink>
     <AuthorizeView Roles="ADMIN, PNR_EDITOR">
+        <MudNavLink Href="/pim" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.TextFields">P&M</MudNavLink>
         <MudNavLink Href="/weather" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.List">Projects</MudNavLink>
+        <MudNavLink Href="/hardwares" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.List">Hardwares</MudNavLink>
+        <MudNavLink Href="/functionalities" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.List">Features</MudNavLink>
     </AuthorizeView>
 </MudNavMenu>

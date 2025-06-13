@@ -1,0 +1,93 @@
+﻿@page "/hardwares"
+@inherits BaseEntityPage<HardwareDto, IHardwareService>
+@using CRUDaster.Components.Dialogs
+@using CRUDaster.Core.Application.DTOs
+@using CRUDaster.Core.Application.Interfaces
+@using CRUDaster.Core.Application.Interfaces.DtoServices
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge">
+    <MudText Typo="Typo.h4" GutterBottom="true">Hardwares</MudText>
+
+    <MudPaper Class="pa-4 mb-4">
+        <MudGrid>
+            <MudItem xs="12" md="6">
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           StartIcon="@Icons.Material.Filled.Add"
+                           OnClick="@(() => ShowCreateDialog<HardwareDialog>("Create Items"))"
+                           Class="mb-4">
+                    Add New Hardware
+                </MudButton>
+            </MudItem>
+            <MudItem xs="12" md="6" Class="d-flex justify-end">
+                <MudTextField @bind-Value="SearchString"
+                              Placeholder="Search"
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Filled.Search"
+                              IconSize="Size.Medium"
+                              Class="mt-0"
+                              Immediate="true" />
+            </MudItem>
+        </MudGrid>
+    </MudPaper>
+
+    @if (Loading)
+    {
+        <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+    }
+    else if (Items == null || !Items.Any())
+    {
+        <MudAlert Severity="Severity.Info">No hardwares found.</MudAlert>
+    }
+    else
+    {
+        <MudTable Items="@Items"
+                  Dense="true"
+                  Hover="true"
+                  Bordered="true"
+                  Striped="true"
+                  Filter="FilterFunc"
+                  Loading="@Loading">
+            <ColGroup>
+                <col style="width: 30px;" />
+                <col style="width: 15%;" />
+                <col style="width: 20%;" />
+                <col style="width: auto;" />
+                <col style="width: 30px;" />
+            </ColGroup>
+            <HeaderContent>
+                <MudTh>ID</MudTh>
+                <MudTh>Serial</MudTh>
+                <MudTh>Description</MudTh>
+                <MudTh>Functionalities</MudTh>
+                <MudTh>Actions</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd>@context.Id</MudTd>
+                <MudTd>@context.Serial</MudTd>
+                <MudTd>@context.Description</MudTd>
+                <MudTd>@string.Join(", ", context.Functionalities.Select(f => f.Name))</MudTd>
+                <MudTd>
+                    <MudStack Row="true">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                       OnClick="@(() => ShowEditDialog<HardwareDialog>("Edit Item", context.Id))" />
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                       Color="Color.Error"
+                                       OnClick="@(() => ShowDeleteDialog(context.Description, context.Id, () => EntityService.DeleteAsync(context.Id)))" />
+                    </MudStack>
+                </MudTd>
+            </RowTemplate>
+            <PagerContent>
+                <MudTablePager />
+            </PagerContent>
+        </MudTable>
+    }
+</MudContainer>
+
+@code {
+    protected override bool FilterFunc(HardwareDto dto)
+    {
+        return string.IsNullOrWhiteSpace(SearchString)
+            || dto.Description.Contains(SearchString, StringComparison.OrdinalIgnoreCase);
+    }
+}
