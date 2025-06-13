@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="MudBlazor" Version="8.7.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\CRUDaster.ExternalServices\CRUDaster.ExternalServices.csproj" />
     <ProjectReference Include="..\CRUDaster.Infrastructure\CRUDaster.Infrastructure.csproj" />
   </ItemGroup>

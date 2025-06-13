@@ -1,6 +1,7 @@
 using CRUDaster.Components;
 using CRUDaster.ExternalServices.Interfaces;
 using CRUDaster.ExternalServices.Services;
+using MudBlazor.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,7 +9,10 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
+builder.Services.AddMudServices();
+builder.Services.AddMudBlazorDialog();
 builder.Services.AddScoped<IClass1, Class1>();
+
 
 var app = builder.Build();
 
