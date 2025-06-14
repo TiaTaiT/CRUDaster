@@ -1,5 +1,5 @@
 ﻿@page "/functionalities"
-@inherits BaseEntityPage<FunctionalityDto, IFunctionalityService>
+@inherits BaseEntityPage<FunctionalityDto>
 @using CRUDaster.Components.Dialogs
 @using CRUDaster.Core.Application.DTOs
 @using CRUDaster.Core.Application.Interfaces
@@ -84,8 +84,7 @@
                                        OnClick="@(() =>
                                             ShowDeleteDialog(
                                                 context.Description,
-                                                context.Id,
-                                                () => EntityService.DeleteAsync(context.Id)
+                                                context.Id
                                             )
                                         )" />
                 </MudStack>
@@ -99,9 +98,17 @@
 </MudContainer>
 
 @code {
+    protected override string ApiEndpoint => "api/functionality";
+
     protected override bool FilterFunc(FunctionalityDto dto)
     {
         return string.IsNullOrWhiteSpace(SearchString)
             || dto.Description.Contains(SearchString, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private async Task DeleteFunctionalityAsync(object id)
+    {
+        var response = await HttpClient.DeleteAsync($"{ApiEndpoint}/{id}");
+        response.EnsureSuccessStatusCode();
     }
 }

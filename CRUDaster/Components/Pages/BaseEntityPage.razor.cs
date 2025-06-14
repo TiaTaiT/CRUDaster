@@ -1,21 +1,26 @@
-﻿using CRUDaster.Core.Application.Interfaces.DtoServices;
-using CRUDaster.Components.CommonDialogs;
+﻿using CRUDaster.Components.CommonDialogs;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
+using static System.Net.WebRequestMethods;
 
 namespace CRUDaster.Components.Pages
 {
-    public abstract class BaseEntityPage<TDto, TService> : ComponentBase
-    where TDto : class
-    where TService : IEntityService<TDto>
+    public abstract class BaseEntityPage<TDto> : ComponentBase
+        where TDto : class
     {
-        [Inject] protected TService EntityService { get; set; }
-        [Inject] protected IDialogService DialogService { get; set; }
-        [Inject] protected ISnackbar Snackbar { get; set; }
+        [Inject] protected IDialogService? DialogService { get; set; }
+        [Inject] protected ISnackbar? Snackbar { get; set; }
+        [Inject] protected HttpClient? HttpClient { get; set; }
 
-        protected IEnumerable<TDto> Items;
+        protected IEnumerable<TDto> Items = [];
         protected bool Loading = true;
         protected string SearchString = "";
+        private HttpClient _http;
+
+        /// <summary>
+        /// Must be overridden to define the API endpoint (e.g. "api/brands")
+        /// </summary>
+        protected abstract string ApiEndpoint { get; }
 
         protected override async Task OnInitializedAsync()
         {
@@ -27,11 +32,13 @@ namespace CRUDaster.Components.Pages
             Loading = true;
             try
             {
-                Items = await EntityService.GetAllAsync();
+                Items = await HttpClient.GetFromJsonAsync<IEnumerable<TDto>>(ApiEndpoint)
+                 ?? [];
             }
             catch (Exception ex)
             {
-                Snackbar.Add($"Error loading items: {ex.Message}", Severity.Error);
+                var fullUrl = new Uri(HttpClient.BaseAddress!, ApiEndpoint).ToString();
+                Snackbar.Add($"Error loading items: {ex.Message}. \"GET: {fullUrl}\"", Severity.Error);
             }
             finally
             {
@@ -47,7 +54,7 @@ namespace CRUDaster.Components.Pages
             var dialog = await DialogService.ShowAsync<TDialog>(title, new DialogParameters());
             var result = await dialog.Result;
 
-            if (!result.Canceled)
+            if (result != null && !result.Canceled)
             {
                 await LoadData();
                 Snackbar.Add("Item created successfully!", Severity.Success);
@@ -61,14 +68,14 @@ namespace CRUDaster.Components.Pages
             var dialog = await DialogService.ShowAsync<TDialog>(title, parameters);
             var result = await dialog.Result;
 
-            if (!result.Canceled)
+            if (result != null && !result.Canceled)
             {
                 await LoadData();
                 Snackbar.Add("Item updated successfully!", Severity.Success);
             }
         }
 
-        protected async Task ShowDeleteDialog(string name, object itemId, Func<Task> deleteAction)
+        protected async Task ShowDeleteDialog(string name, object itemId)
         {
             var parameters = new DialogParameters
             {
@@ -80,11 +87,13 @@ namespace CRUDaster.Components.Pages
             var dialog = await DialogService.ShowAsync<ConfirmDialog>("Delete Item", parameters);
             var result = await dialog.Result;
 
-            if (!result.Canceled)
+            if (result != null && !result.Canceled)
             {
                 try
                 {
-                    await deleteAction();
+                    var response = await HttpClient.DeleteAsync($"{ApiEndpoint}/{itemId}");
+                    response.EnsureSuccessStatusCode();
+
                     await LoadData();
                     Snackbar.Add("Item deleted successfully!", Severity.Success);
                 }

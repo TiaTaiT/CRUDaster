@@ -12,6 +12,24 @@ namespace CRUDaster.Controllers
     {
         private readonly IHardwareService _hardwareService = hardwareService;
 
+        // GET: api/hardware
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<HardwareDto>>> GetAll()
+        {
+            var hardwares = await _hardwareService.GetAllAsync();
+            return Ok(hardwares);
+        }
+
+        // GET: api/hardware/{id}
+        [HttpGet("{id}")]
+        public async Task<ActionResult<HardwareDto>> GetById(int id)
+        {
+            var hardware = await _hardwareService.GetByIdAsync(id);
+            if (hardware == null)
+                return NotFound();
+            return Ok(hardware);
+        }
+
         // GET: api/hardware/byserial/{serial}
         [AllowAnonymous]
         [HttpGet("byserial/{serial}")]
@@ -21,6 +39,33 @@ namespace CRUDaster.Controllers
             if (hardware == null)
                 return NotFound();
             return Ok(hardware);
+        }
+
+        // POST: api/hardware
+        [HttpPost]
+        public async Task<ActionResult<HardwareDto>> Create(HardwareCreateDto dto)
+        {
+            var created = await _hardwareService.CreateAsync(dto);
+            return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
+        }
+
+        // PUT: api/hardware/{id}
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(int id, HardwareUpdateDto dto)
+        {
+            if (id != dto.Id)
+                return BadRequest("ID mismatch");
+
+            await _hardwareService.UpdateAsync(dto);
+            return NoContent();
+        }
+
+        // DELETE: api/hardware/{id}
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            await _hardwareService.DeleteAsync(id);
+            return NoContent();
         }
     }
 }

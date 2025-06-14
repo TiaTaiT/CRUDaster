@@ -1,0 +1,121 @@
+﻿@using System.Diagnostics
+@using System.Text.Json
+@using CRUDaster.Core.Application.DTOs
+@using CRUDaster.Core.Application.Interfaces
+@using CRUDaster.Core.Application.Interfaces.DtoServices
+@using CRUDaster.Core.Application.Services
+
+@inject IPimService PimService
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <DialogContent>
+        <MudForm @ref="form" @bind-IsValid="@_isValid">
+            <MudGrid>
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="_name"
+                                  Label="Name"
+                                  Required="true"
+                                  RequiredError="Name is required"
+                                  MaxLength="255" />
+                </MudItem>
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="_description"
+                                  Label="Description"
+                                  MaxLength="255" />
+                </MudItem>
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="_content"
+                                  Label="Content"
+                                  AutoGrow
+                                  MaxLength="65535" />
+                </MudItem>
+            </MudGrid>
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary"
+                   Disabled="@(!_isValid || _processing)"
+                   OnClick="Submit">
+            @if (_processing)
+            {
+                <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                <MudText Class="ms-2">Processing</MudText>
+            }
+            else
+            {
+                @(_isEdit ? "Update" : "Create")
+            }
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; }
+    [Parameter] public int? ItemId { get; set; }
+
+    private MudForm form;
+    private bool _isValid;
+    private bool _processing;
+    private bool _isEdit => ItemId.HasValue;
+
+    private string _name = "";
+    private string _description = "";
+    private string _content = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            if (_isEdit && ItemId.HasValue)
+            {
+                var item = await PimService.GetByIdAsync(ItemId.Value);
+                if (item != null)
+                {
+                    _name = item.Name;
+                    _description = item.Description;
+                    _content = item.Content;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error loading: {ex.Message}", Severity.Error);
+            Cancel();
+        }
+    }
+
+    private async Task Submit()
+    {
+        _processing = true;
+
+        try
+        {
+            if (_isEdit)
+            {
+                // Update existing hardware
+                await PimService.UpdateAsync(new PimUpdateDto(ItemId ?? 0, _name, _description, _content));
+            }
+            else
+            {
+                // Create new product
+                var createModel = new PimCreateDto(_name, _description, _content);
+
+                await PimService.CreateAsync(createModel);
+            }
+
+            MudDialog.Close(DialogResult.Ok(true));
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error saving product: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _processing = false;
+        }
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+}

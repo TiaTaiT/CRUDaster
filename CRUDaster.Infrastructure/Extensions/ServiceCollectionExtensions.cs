@@ -33,6 +33,7 @@ namespace CRUDaster.Infrastructure.Extensions
 
             services.AddScoped<IHardwareService, HardwareService>();
             services.AddScoped<IFunctionalityService, FunctionalityService>();
+            services.AddScoped<IPimService, PimService>();
 
             return services;
         }

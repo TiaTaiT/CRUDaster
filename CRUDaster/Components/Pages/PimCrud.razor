@@ -1,94 +1,100 @@
 ﻿@page "/pim"
-@inject IPimRepository ItemService
-@using CRUDaster.Core.Application.Interfaces.Repositories
-@using CRUDaster.Core.Domain.Entities
-@using CRUDaster.Infrastructure.Data.Repositories
+@inherits BaseEntityPage<PimDto>
+@using CRUDaster.Components.Dialogs
+@using CRUDaster.Core.Application.DTOs
+@using CRUDaster.Core.Application.Interfaces
+@using CRUDaster.Core.Application.Interfaces.DtoServices
 
-@using MudBlazor
+<MudContainer MaxWidth="MaxWidth.ExtraLarge">
+    <MudText Typo="Typo.h4" GutterBottom="true">Programs & methods</MudText>
 
-<PageTitle>Items</PageTitle>
+    <MudPaper Class="pa-4 mb-4">
+        <MudGrid>
+            <MudItem xs="12" md="6">
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           StartIcon="@Icons.Material.Filled.Add"
+                           OnClick="@(() => ShowCreateDialog<PimDialog>("Create Items"))"
+                           Class="mb-4">
+                    Add New Hardware
+                </MudButton>
+            </MudItem>
+            <MudItem xs="12" md="6" Class="d-flex justify-end">
+                <MudTextField @bind-Value="SearchString"
+                              Placeholder="Search"
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Filled.Search"
+                              IconSize="Size.Medium"
+                              Class="mt-0"
+                              Immediate="true" />
+            </MudItem>
+        </MudGrid>
+    </MudPaper>
 
-<MudPaper Class="p-4">
-    <MudText Typo="Typo.h5">Item Manager</MudText>
-    <MudButton Color="Color.Primary" OnClick="OpenCreateDialog" Class="my-2">Add Item</MudButton>
-
-    <MudTable Items="_items" Hover="true">
-        <HeaderContent>
-            <MudTh>Name</MudTh>
-            <MudTh>Description</MudTh>
-            <MudTh>Actions</MudTh>
-        </HeaderContent>
-        <RowTemplate>
-            <MudTd>@context.Name</MudTd>
-            <MudTd>@context.Description</MudTd>
-            <MudTd>
-                <MudIconButton Icon="@Icons.Material.Filled.Edit" OnClick="@(() => EditItem(context))" />
-                <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="@(() => DeleteItem(context))" />
+    @if (Loading)
+    {
+        <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+    }
+    else if (Items == null || !Items.Any())
+    {
+        <MudAlert Severity="Severity.Info">No P&Ms found.</MudAlert>
+    }
+    else
+    {
+        <MudTable Items="@Items"
+                  Dense="true"
+                  Hover="true"
+                  Bordered="true"
+                  Striped="true"
+                  Filter="FilterFunc"
+                  Loading="@Loading">
+            <ColGroup>
+                <col style="width: 20%;" />
+                <col style="width: auto;" />
+                <col style="width: 30px;" />
+            </ColGroup>
+            <HeaderContent>
+                <MudTh>Name</MudTh>
+                <MudTh>Description</MudTh>
+                <MudTh>Actions</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd>@context.Name</MudTd>
+                <MudTd>@context.Description</MudTd>
+                <MudTd>
+                    <MudStack Row="true">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                       OnClick="@(() => ShowEditDialog<PimDialog>("Edit Item", context.Id))" />
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                       Color="Color.Error"
+                                       OnClick="@(() =>
+                                            ShowDeleteDialog(
+                                                context.Name,
+                                                context.Id
+                                            )
+                                        )" />
+                </MudStack>
             </MudTd>
         </RowTemplate>
+        <PagerContent>
+            <MudTablePager />
+        </PagerContent>
     </MudTable>
-</MudPaper>
-
-<MudDialog @bind-IsOpen="_isDialogOpen">
-    <DialogContent>
-        <MudTextField @bind-Value="_editingItem.Name" Label="Name" Required="true" />
-        <MudTextField @bind-Value="_editingItem.Description" Label="Description" />
-    </DialogContent>
-    <DialogActions>
-        <MudButton OnClick="SaveItem" Color="Color.Primary">Save</MudButton>
-        <MudButton OnClick="CloseDialog">Cancel</MudButton>
-    </DialogActions>
-</MudDialog>
+        }
+</MudContainer>
 
 @code {
-    private List<Pim> _items = new();
-    private Pim _editingItem = new();
-    private bool _isDialogOpen = false;
+    protected override string ApiEndpoint => "api/pim";
 
-    protected override async Task OnInitializedAsync()
+    protected override bool FilterFunc(PimDto dto)
     {
-        await LoadItems();
+        return string.IsNullOrWhiteSpace(SearchString)
+            || dto.Description.Contains(SearchString, StringComparison.OrdinalIgnoreCase);
     }
 
-    private async Task LoadItems()
+    private async Task DeleteFunctionalityAsync(object id)
     {
-        var items = await ItemService.GetAllAsync();
-        _items = items.ToList();
-    }
-
-    private void OpenCreateDialog()
-    {
-        _editingItem = new();
-        _isDialogOpen = true;
-    }
-
-    private void EditItem(Pim item)
-    {
-        _editingItem = new Pim
-        {
-            Id = item.Id,
-            Name = item.Name,
-            Description = item.Description
-        };
-        _isDialogOpen = true;
-    }
-
-    private async Task SaveItem()
-    {
-        if (_editingItem.Id == 0)
-            await ItemService.AddAsync(_editingItem);
-        else
-            await ItemService.UpdateAsync(_editingItem);
-
-        _isDialogOpen = false;
-        await LoadItems();
-    }
-
-    private void CloseDialog() => _isDialogOpen = false;
-
-    private async Task DeleteItem(Pim id)
-    {
-        await ItemService.DeleteAsync(id);
-        await LoadItems();
+        var response = await HttpClient.DeleteAsync($"{ApiEndpoint}/{id}");
+        response.EnsureSuccessStatusCode();
     }
 }

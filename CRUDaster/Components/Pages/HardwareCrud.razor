@@ -1,5 +1,5 @@
 ﻿@page "/hardwares"
-@inherits BaseEntityPage<HardwareDto, IHardwareService>
+@inherits BaseEntityPage<HardwareDto>
 @using CRUDaster.Components.Dialogs
 @using CRUDaster.Core.Application.DTOs
 @using CRUDaster.Core.Application.Interfaces
@@ -73,7 +73,12 @@
                                        OnClick="@(() => ShowEditDialog<HardwareDialog>("Edit Item", context.Id))" />
                         <MudIconButton Icon="@Icons.Material.Filled.Delete"
                                        Color="Color.Error"
-                                       OnClick="@(() => ShowDeleteDialog(context.Description, context.Id, () => EntityService.DeleteAsync(context.Id)))" />
+                                       OnClick="@(() =>
+                                            ShowDeleteDialog(
+                                                context.Description,
+                                                context.Id
+                                            )
+                                        )" />
                     </MudStack>
                 </MudTd>
             </RowTemplate>
@@ -85,9 +90,17 @@
 </MudContainer>
 
 @code {
+    protected override string ApiEndpoint => "api/hardware";
+
     protected override bool FilterFunc(HardwareDto dto)
     {
         return string.IsNullOrWhiteSpace(SearchString)
             || dto.Description.Contains(SearchString, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private async Task DeleteFunctionalityAsync(object id)
+    {
+        var response = await HttpClient.DeleteAsync($"{ApiEndpoint}/{id}");
+        response.EnsureSuccessStatusCode();
     }
 }
