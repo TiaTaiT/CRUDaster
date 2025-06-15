@@ -1,16 +1,11 @@
-﻿@page "/document-crud"
-@inherits BaseEntityPage<DocumentDto, IDocumentService>
+﻿@page "/document"
+@inherits BaseEntityPage<DocumentDto>
+@using CRUDaster.Components.Dialogs
 @using CRUDaster.Core.Application.DTOs
-@using CRUDaster.Core.Application.Interfaces.DtoServices
-@using Configaster.Core.Application.DTOs
-@using Configaster.Core.Application.Interfaces.DtoServices
-@using Configaster.Shared.Components.Document
+@inject HttpClient HttpClient
 
-@inject IDocumentService DocumentService
-@inject NavigationManager NavigationManager
-
-<MudContainer MaxWidth="MaxWidth.Medium">
-    <MudText Typo="Typo.h4" GutterBottom="true">Document</MudText>
+<MudContainer MaxWidth="MaxWidth.ExtraLarge">
+    <MudText Typo="Typo.h4" GutterBottom="true">Documents</MudText>
 
     <MudPaper Class="pa-4 mb-4">
         <MudGrid>
@@ -18,9 +13,9 @@
                 <MudButton Variant="Variant.Filled"
                            Color="Color.Primary"
                            StartIcon="@Icons.Material.Filled.Add"
-                           OnClick="@(() => ShowCreateDialog<DocumentDialog>("Create Item"))"
+                           OnClick="@(() => ShowCreateItemDialog())"
                            Class="mb-4">
-                    Add New Functionality
+                    Add New Document
                 </MudButton>
             </MudItem>
             <MudItem xs="12" md="6" Class="d-flex justify-end">
@@ -41,7 +36,7 @@
     }
     else if (Items == null || !Items.Any())
     {
-        <MudAlert Severity="Severity.Info">No functionalities found.</MudAlert>
+        <MudAlert Severity="Severity.Info">No Documents found.</MudAlert>
     }
     else
     {
@@ -54,8 +49,8 @@
                   Loading="@Loading">
             <ColGroup>
                 <col style="width: 40px;" />
-                <col style="width: 100%;" />
-                <col style="width: 30px;" />
+                <col style="width: auto;" />
+                <col style="width: 100px;" />
             </ColGroup>
             <HeaderContent>
                 <MudTh>ID</MudTh>
@@ -65,40 +60,89 @@
             <RowTemplate>
                 <MudTd DataLabel="ID">@context.Id</MudTd>
                 <MudTd DataLabel="Name">@context.Name</MudTd>
-
                 <MudTd>
                     <MudStack Row="true" Spacing="1">
                         <MudIconButton Icon="@Icons.Material.Filled.Edit"
                                        Color="Color.Primary"
                                        Size="Size.Small"
                                        Title="Edit"
-                                       OnClick="@(() => ShowEditDialog<DocumentDialog>("Edit Item", context.Id))" />
-
+                                       OnClick="@(() => ShowEditItemDialog(context))" />
                         <MudIconButton Icon="@Icons.Material.Filled.Delete"
                                        Color="Color.Error"
                                        Size="Size.Small"
                                        Title="Delete"
-                                       OnClick="@(() =>
-                                            ShowDeleteDialog(
-                                                context.Name,
-                                                context.Id,
-                                                () => EntityService.DeleteAsync(context.Id)
-                                            )
-                                        )" />
-                </MudStack>
-            </MudTd>
-        </RowTemplate>
-        <PagerContent>
-            <MudTablePager />
-        </PagerContent>
-    </MudTable>
-        }
+                                       OnClick="@(() => ShowDeleteDialog(context.Name, context.Id))" />
+                    </MudStack>
+                </MudTd>
+            </RowTemplate>
+            <PagerContent>
+                <MudTablePager />
+            </PagerContent>
+        </MudTable>
+    }
 </MudContainer>
 
 @code {
+    protected override string ApiEndpoint => "api/document";
+
     protected override bool FilterFunc(DocumentDto dto)
     {
         return string.IsNullOrWhiteSpace(SearchString)
             || dto.Name.Contains(SearchString, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private async Task ShowCreateItemDialog()
+    {
+        var parameters = new DialogParameters
+        {
+            ["OnCreate"] = EventCallback.Factory.Create<DocumentCreateDto>(this, HandleCreate)
+        };
+
+        var dialog = await DialogService.ShowAsync<DocumentDialog>("Create Document", parameters);
+        await dialog.Result;
+    }
+
+    private async Task ShowEditItemDialog(DocumentDto dto)
+    {
+        var parameters = new DialogParameters
+        {
+            ["Dto"] = dto,
+            ["OnUpdate"] = EventCallback.Factory.Create<DocumentUpdateDto>(this, HandleUpdate)
+        };
+
+        var dialog = await DialogService.ShowAsync<DocumentDialog>("Edit Document", parameters);
+        await dialog.Result;
+    }
+
+    private async Task HandleCreate(DocumentCreateDto createDto)
+    {
+        try
+        {
+            var response = await HttpClient.PostAsJsonAsync(ApiEndpoint, createDto);
+            response.EnsureSuccessStatusCode();
+            await LoadData();
+            Snackbar.Add("Item created successfully!", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error creating item: {ex.Message}", Severity.Error);
+            throw;
+        }
+    }
+
+    private async Task HandleUpdate(DocumentUpdateDto updateDto)
+    {
+        try
+        {
+            var response = await HttpClient.PutAsJsonAsync($"{ApiEndpoint}/{updateDto.Id}", updateDto);
+            response.EnsureSuccessStatusCode();
+            await LoadData();
+            Snackbar.Add("Item updated successfully!", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error updating Item: {ex.Message}", Severity.Error);
+            throw;
+        }
     }
 }

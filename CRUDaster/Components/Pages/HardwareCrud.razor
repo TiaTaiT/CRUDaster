@@ -4,6 +4,7 @@
 @using CRUDaster.Core.Application.DTOs
 @using CRUDaster.Core.Application.Interfaces
 @using CRUDaster.Core.Application.Interfaces.DtoServices
+@inject HttpClient HttpClient
 
 <MudContainer MaxWidth="MaxWidth.ExtraLarge">
     <MudText Typo="Typo.h4" GutterBottom="true">Hardwares</MudText>
@@ -14,7 +15,7 @@
                 <MudButton Variant="Variant.Filled"
                            Color="Color.Primary"
                            StartIcon="@Icons.Material.Filled.Add"
-                           OnClick="@(() => ShowCreateDialog<HardwareDialog>("Create Items"))"
+                           OnClick="@(() => ShowCreateHardwareDialog())"
                            Class="mb-4">
                     Add New Hardware
                 </MudButton>
@@ -70,15 +71,10 @@
                 <MudTd>
                     <MudStack Row="true">
                         <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                       OnClick="@(() => ShowEditDialog<HardwareDialog>("Edit Item", context.Id))" />
+                                       OnClick="@(() => ShowEditHardwareDialog(context))" />
                         <MudIconButton Icon="@Icons.Material.Filled.Delete"
                                        Color="Color.Error"
-                                       OnClick="@(() =>
-                                            ShowDeleteDialog(
-                                                context.Description,
-                                                context.Id
-                                            )
-                                        )" />
+                                       OnClick="@(() => ShowDeleteDialog(context.Description, context.Id))" />
                     </MudStack>
                 </MudTd>
             </RowTemplate>
@@ -91,16 +87,87 @@
 
 @code {
     protected override string ApiEndpoint => "api/hardware";
+    private IEnumerable<FunctionalityDto> _allFunctionalities = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadFunctionalities();
+        await base.OnInitializedAsync();
+    }
+
+    private async Task LoadFunctionalities()
+    {
+        try
+        {
+            _allFunctionalities = await HttpClient.GetFromJsonAsync<IEnumerable<FunctionalityDto>>("api/functionality") ?? [];
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error loading functionalities: {ex.Message}", Severity.Error);
+        }
+    }
 
     protected override bool FilterFunc(HardwareDto dto)
     {
         return string.IsNullOrWhiteSpace(SearchString)
-            || dto.Description.Contains(SearchString, StringComparison.OrdinalIgnoreCase);
+            || dto.Description.Contains(SearchString, StringComparison.OrdinalIgnoreCase)
+            || dto.Serial.Contains(SearchString, StringComparison.OrdinalIgnoreCase);
     }
 
-    private async Task DeleteFunctionalityAsync(object id)
+    private async Task ShowCreateHardwareDialog()
     {
-        var response = await HttpClient.DeleteAsync($"{ApiEndpoint}/{id}");
-        response.EnsureSuccessStatusCode();
+        var parameters = new DialogParameters
+        {
+            ["AllFunctionalities"] = _allFunctionalities,
+            ["OnCreate"] = EventCallback.Factory.Create<HardwareCreateDto>(this, HandleCreate)
+        };
+
+        var dialog = await DialogService.ShowAsync<HardwareDialog>("Create Hardware", parameters);
+        await dialog.Result;
+    }
+
+    private async Task ShowEditHardwareDialog(HardwareDto hardware)
+    {
+        var parameters = new DialogParameters
+        {
+            ["Hardware"] = hardware,
+            ["AllFunctionalities"] = _allFunctionalities,
+            ["OnUpdate"] = EventCallback.Factory.Create<HardwareUpdateDto>(this, HandleUpdate)
+        };
+
+        var dialog = await DialogService.ShowAsync<HardwareDialog>("Edit Hardware", parameters);
+        await dialog.Result;
+    }
+
+    private async Task HandleCreate(HardwareCreateDto createDto)
+    {
+        try
+        {
+            var response = await HttpClient.PostAsJsonAsync(ApiEndpoint, createDto);
+            response.EnsureSuccessStatusCode();
+            await LoadData();
+            Snackbar.Add("Hardware created successfully!", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error creating hardware: {ex.Message}", Severity.Error);
+            throw;
+        }
+    }
+
+    private async Task HandleUpdate(HardwareUpdateDto updateDto)
+    {
+        try
+        {
+            var response = await HttpClient.PutAsJsonAsync($"{ApiEndpoint}/{updateDto.Id}", updateDto);
+            response.EnsureSuccessStatusCode();
+            await LoadData();
+            Snackbar.Add("Hardware updated successfully!", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error updating hardware: {ex.Message}", Severity.Error);
+            throw;
+        }
     }
 }

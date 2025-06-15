@@ -2,9 +2,17 @@
     <MudNavLink Href="/" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">Dashboard</MudNavLink>
     <MudNavLink Href="/counter" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Add">Google spreadsheets</MudNavLink>
     <AuthorizeView Roles="ADMIN, PNR_EDITOR">
-        <MudNavLink Href="/pim" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.TextFields">P&M</MudNavLink>
-        <MudNavLink Href="/weather" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.List">Projects</MudNavLink>
-        <MudNavLink Href="/hardwares" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.List">Hardwares</MudNavLink>
-        <MudNavLink Href="/functionalities" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.List">Features</MudNavLink>
+        <MudNavGroup Title="CRUDs" Expanded="true" Icon="@Icons.Material.Filled.Article">
+            <MudNavLink Href="/pim" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.TextFields">P&Ms</MudNavLink>
+            <MudNavLink Href="/brand" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.TextFields">Brands</MudNavLink>
+            <MudNavLink Href="/document" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.TextFields">Documents</MudNavLink>
+            <MudNavLink Href="/category" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.List">Categories</MudNavLink>
+            <MudNavLink Href="/status" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.List">Status</MudNavLink>
+        </MudNavGroup>
+        <MudNavGroup Title="Licenses" Expanded="true" Icon="@Icons.Material.Filled.AdsClick">
+            <MudNavLink Href="/hardwares" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.List">Hardwares</MudNavLink>
+            <MudNavLink Href="/functionalities" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.List">Features</MudNavLink>
+        </MudNavGroup>
     </AuthorizeView>
+    <MudNavLink Href="/weather" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.List">Weather</MudNavLink>
 </MudNavMenu>

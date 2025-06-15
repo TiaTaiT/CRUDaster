@@ -1,12 +1,5 @@
-﻿@using System.Diagnostics
-@using System.Text.Json
-@using CRUDaster.Core.Application.DTOs
-@using CRUDaster.Core.Application.Interfaces
-@using CRUDaster.Core.Application.Interfaces.DtoServices
-@using CRUDaster.Core.Application.Services
+﻿@using CRUDaster.Core.Application.DTOs
 @using CRUDaster.Comparers
-@inject IHardwareService HardwareService
-@inject IFunctionalityService FunctionalityService
 @inject ISnackbar Snackbar
 
 <MudDialog>
@@ -17,10 +10,9 @@
                     <MudTextField @bind-Value="_serial"
                                   Label="Serial Number"
                                   Required="true"
-                                  RequiredError="Description is required"
+                                  RequiredError="Serial number is required"
                                   MaxLength="100" />
                 </MudItem>
-
                 <MudItem xs="12">
                     <MudTextField @bind-Value="_description"
                                   Label="Description"
@@ -28,7 +20,6 @@
                                   RequiredError="Description is required"
                                   MaxLength="100" />
                 </MudItem>
-
                 <MudItem xs="12">
                     <MudSelect T="FunctionalityDto"
                                Label="Functionalities"
@@ -36,7 +27,7 @@
                                MultiSelection="true"
                                ToStringFunc="f => f.Name"
                                Comparer="new PropertyEqualityComparer<FunctionalityDto, int>(f => f.Id)">
-                        @foreach (var functionality in _allFunctionalities)
+                        @foreach (var functionality in AllFunctionalities)
                         {
                             <MudSelectItem Value="@functionality">@functionality.Name</MudSelectItem>
                         }
@@ -65,70 +56,57 @@
 
 @code {
     [CascadingParameter] IMudDialogInstance MudDialog { get; set; }
-    [Parameter] public int? ItemId { get; set; }
+
+    // Parameters passed from parent
+    [Parameter] public HardwareDto? Hardware { get; set; }
+    [Parameter] public IEnumerable<FunctionalityDto> AllFunctionalities { get; set; } = [];
+    [Parameter] public EventCallback<HardwareCreateDto> OnCreate { get; set; }
+    [Parameter] public EventCallback<HardwareUpdateDto> OnUpdate { get; set; }
 
     private MudForm _form;
     private bool _isValid;
     private bool _processing;
-    private bool _isEdit => ItemId.HasValue;
+    private bool _isEdit => Hardware != null;
 
     private string _serial = "";
     private string _description = "";
     private IEnumerable<FunctionalityDto> _selectedFunctionalities = new List<FunctionalityDto>();
-    private IEnumerable<FunctionalityDto> _allFunctionalities = [];
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnParametersSet()
     {
-        try
+        if (_isEdit && Hardware != null)
         {
-            _allFunctionalities = await FunctionalityService.GetAllAsync();
-            if (_isEdit && ItemId.HasValue)
-            {
-                var hardware = await HardwareService.GetByIdAsync(ItemId.Value);
-                if (hardware != null)
-                {
-                    _serial = hardware.Serial;
-                    _description = hardware.Description;
-                    _allFunctionalities = await FunctionalityService.GetAllAsync();
-
-                    _selectedFunctionalities = _allFunctionalities
-                        .Where(f => hardware.Functionalities.Any(hf => hf.Id == f.Id))
-                        .ToHashSet(new PropertyEqualityComparer<FunctionalityDto, int>(f => f.Id));
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            Snackbar.Add($"Error loading: {ex.Message}", Severity.Error);
-            Cancel();
+            _serial = Hardware.Serial;
+            _description = Hardware.Description;
+            _selectedFunctionalities = AllFunctionalities
+                .Where(f => Hardware.Functionalities.Any(hf => hf.Id == f.Id))
+                .ToHashSet(new PropertyEqualityComparer<FunctionalityDto, int>(f => f.Id));
         }
     }
 
     private async Task Submit()
     {
         _processing = true;
-
         try
         {
-            var _selectedFunctionalityIds = _selectedFunctionalities.Select(f => f.Id);
-            if (_isEdit)
+            var selectedFunctionalityIds = _selectedFunctionalities.Select(f => f.Id);
+
+            if (_isEdit && Hardware != null)
             {
-                // Update existing hardware
-                await HardwareService.UpdateAsync(new HardwareUpdateDto(ItemId ?? 0, _serial, _description, _selectedFunctionalityIds));
+                var updateDto = new HardwareUpdateDto(Hardware.Id, _serial, _description, selectedFunctionalityIds);
+                await OnUpdate.InvokeAsync(updateDto);
             }
             else
             {
-                // Create new product
-                var createModel = new HardwareCreateDto(_serial, _description, _selectedFunctionalityIds);
-
-                await HardwareService.CreateAsync(createModel);
+                var createDto = new HardwareCreateDto(_serial, _description, selectedFunctionalityIds);
+                await OnCreate.InvokeAsync(createDto);
             }
 
             MudDialog.Close(DialogResult.Ok(true));
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error saving product: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error saving hardware: {ex.Message}", Severity.Error);
         }
         finally
         {

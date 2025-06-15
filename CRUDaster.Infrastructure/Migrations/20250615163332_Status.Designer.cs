@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CRUDaster.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250613165727_Initial")]
-    partial class Initial
+    [Migration("20250615163332_Status")]
+    partial class Status
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -47,7 +47,7 @@ namespace CRUDaster.Infrastructure.Migrations
                     b.HasIndex("Name")
                         .IsUnique();
 
-                    b.ToTable("Functionalities", (string)null);
+                    b.ToTable("Functionality", (string)null);
                 });
 
             modelBuilder.Entity("CRUDaster.Core.Domain.Entities.AppUserRights.Hardware", b =>
@@ -72,7 +72,7 @@ namespace CRUDaster.Infrastructure.Migrations
                     b.HasIndex("Serial")
                         .IsUnique();
 
-                    b.ToTable("Hardwares", (string)null);
+                    b.ToTable("Hardware", (string)null);
                 });
 
             modelBuilder.Entity("CRUDaster.Core.Domain.Entities.Brand", b =>
@@ -107,7 +107,35 @@ namespace CRUDaster.Infrastructure.Migrations
                     b.HasIndex("Name")
                         .IsUnique();
 
-                    b.ToTable("brand", (string)null);
+                    b.ToTable("Brand", (string)null);
+                });
+
+            modelBuilder.Entity("CRUDaster.Core.Domain.Entities.Category", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Description");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("Category", (string)null);
                 });
 
             modelBuilder.Entity("CRUDaster.Core.Domain.Entities.Document", b =>
@@ -142,50 +170,7 @@ namespace CRUDaster.Infrastructure.Migrations
                     b.HasIndex("Name")
                         .IsUnique();
 
-                    b.ToTable("document", (string)null);
-                });
-
-            modelBuilder.Entity("CRUDaster.Core.Domain.Entities.Draft", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("CreatorId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("ImageFile")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Model2Dfile")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Model3Dfile")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("UpdaterId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Drafts");
+                    b.ToTable("Document", (string)null);
                 });
 
             modelBuilder.Entity("CRUDaster.Core.Domain.Entities.Pim", b =>
@@ -230,7 +215,7 @@ namespace CRUDaster.Infrastructure.Migrations
                     b.HasIndex("Name")
                         .IsUnique();
 
-                    b.ToTable("pim", (string)null);
+                    b.ToTable("Pim", (string)null);
                 });
 
             modelBuilder.Entity("CRUDaster.Core.Domain.Entities.Product", b =>
@@ -270,7 +255,28 @@ namespace CRUDaster.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Products", (string)null);
+                    b.ToTable("Product", (string)null);
+                });
+
+            modelBuilder.Entity("CRUDaster.Core.Domain.Entities.Status", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("Status", (string)null);
                 });
 
             modelBuilder.Entity("HardwareFunctionality", b =>

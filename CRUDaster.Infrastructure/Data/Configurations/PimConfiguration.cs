@@ -8,7 +8,7 @@ namespace Configaster.Infrastructure.Data.Configurations
     {
         public void Configure(EntityTypeBuilder<Pim> builder)
         {
-            builder.ToTable("pim");
+            builder.ToTable("Pim");
             builder.HasKey(f => f.Id);
 
             builder.Property(f => f.Name)

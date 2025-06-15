@@ -78,8 +78,14 @@ app.MapGet("/Account/Login", async (HttpContext httpContext, string returnUrl = 
     var authenticationProperties = new LoginAuthenticationPropertiesBuilder()
         .WithRedirectUri(returnUrl)
         .Build();
-
-    await httpContext.ChallengeAsync(Auth0Constants.AuthenticationScheme, authenticationProperties);
+    try
+    {
+        await httpContext.ChallengeAsync(Auth0Constants.AuthenticationScheme, authenticationProperties);
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine(ex);
+    }
 });
 
 app.MapGet("/Account/Logout", async (HttpContext httpContext) =>

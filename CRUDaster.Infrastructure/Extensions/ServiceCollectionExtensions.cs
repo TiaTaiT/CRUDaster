@@ -30,10 +30,17 @@ namespace CRUDaster.Infrastructure.Extensions
             services.AddScoped<IBrandRepository, BrandRepository>();
             services.AddScoped<IDocumentRepository, DocumentRepository>();
             services.AddScoped<IPimRepository, PimRepository>();
+            services.AddScoped<ICategoryRepository, CategoryRepository>();
+            services.AddScoped<IDocumentRepository, DocumentRepository>();
+            services.AddScoped<IStatusRepository, StatusRepository>();
 
             services.AddScoped<IHardwareService, HardwareService>();
             services.AddScoped<IFunctionalityService, FunctionalityService>();
             services.AddScoped<IPimService, PimService>();
+            services.AddScoped<IBrandService, BrandService>();
+            services.AddScoped<ICategoryService, CategoryService>();
+            services.AddScoped<IDocumentService, DocumentService>();
+            services.AddScoped<IStatusService, StatusService>();
 
             return services;
         }

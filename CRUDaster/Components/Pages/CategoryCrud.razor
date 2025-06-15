@@ -1,21 +1,21 @@
-﻿@page "/functionalities"
-@inherits BaseEntityPage<FunctionalityDto>
+﻿@page "/category"
+@inherits BaseEntityPage<CategoryDto>
 @using CRUDaster.Components.Dialogs
 @using CRUDaster.Core.Application.DTOs
-@using CRUDaster.Core.Application.Interfaces
-@using CRUDaster.Core.Application.Interfaces.DtoServices
+@inject HttpClient HttpClient
 
 <MudContainer MaxWidth="MaxWidth.ExtraLarge">
-    <MudText Typo="Typo.h4" GutterBottom="true">Features</MudText>
+    <MudText Typo="Typo.h4" GutterBottom="true">Categories</MudText>
+
     <MudPaper Class="pa-4 mb-4">
         <MudGrid>
             <MudItem xs="12" md="6">
                 <MudButton Variant="Variant.Filled"
                            Color="Color.Primary"
                            StartIcon="@Icons.Material.Filled.Add"
-                           OnClick="@(() => ShowCreateFunctionalityDialog())"
+                           OnClick="@(() => ShowCreateItemDialog())"
                            Class="mb-4">
-                    Add New Functionality
+                    Add New Category
                 </MudButton>
             </MudItem>
             <MudItem xs="12" md="6" Class="d-flex justify-end">
@@ -36,7 +36,7 @@
     }
     else if (Items == null || !Items.Any())
     {
-        <MudAlert Severity="Severity.Info">No functionalities found.</MudAlert>
+        <MudAlert Severity="Severity.Info">No Categories found.</MudAlert>
     }
     else
     {
@@ -49,37 +49,35 @@
                   Loading="@Loading">
             <ColGroup>
                 <col style="width: 40px;" />
-                <col style="width: 25%;" />
-                <col style="width: 25%;" />
-                <col style="width: 35%;" />
-                <col style="width: 30px;" />
+                <col style="width: 15%;" />
+                <col style="width: 20%;" />
+                <col style="width: 50%;" />
+                <col style="width: 10%;" />
+                <col style="width: 5%;" />
+                <col style="width: 100px;" />
             </ColGroup>
             <HeaderContent>
                 <MudTh>ID</MudTh>
                 <MudTh>Name</MudTh>
                 <MudTh>Description</MudTh>
-                <MudTh>Hardwares</MudTh>
                 <MudTh>Actions</MudTh>
             </HeaderContent>
             <RowTemplate>
                 <MudTd DataLabel="ID">@context.Id</MudTd>
                 <MudTd DataLabel="Name">@context.Name</MudTd>
                 <MudTd DataLabel="Description">@context.Description</MudTd>
-                <MudTd DataLabel="Hardwares">
-                    @string.Join(", ", context.Hardwares.Select(h => h.Serial))
-                </MudTd>
                 <MudTd>
                     <MudStack Row="true" Spacing="1">
                         <MudIconButton Icon="@Icons.Material.Filled.Edit"
                                        Color="Color.Primary"
                                        Size="Size.Small"
                                        Title="Edit"
-                                       OnClick="@(() => ShowEditFunctionalityDialog(context))" />
+                                       OnClick="@(() => ShowEditItemDialog(context))" />
                         <MudIconButton Icon="@Icons.Material.Filled.Delete"
                                        Color="Color.Error"
                                        Size="Size.Small"
                                        Title="Delete"
-                                       OnClick="@(() => ShowDeleteDialog(context.Description, context.Id))" />
+                                       OnClick="@(() => ShowDeleteDialog(context.Name, context.Id))" />
                     </MudStack>
                 </MudTd>
             </RowTemplate>
@@ -91,88 +89,67 @@
 </MudContainer>
 
 @code {
-    protected override string ApiEndpoint => "api/functionality";
-    private IEnumerable<HardwareDto> _allHardwares = [];
+    protected override string ApiEndpoint => "api/category";
 
-    protected override async Task OnInitializedAsync()
-    {
-        await LoadHardwares();
-        await base.OnInitializedAsync();
-    }
-
-    private async Task LoadHardwares()
-    {
-        try
-        {
-            _allHardwares = await HttpClient.GetFromJsonAsync<IEnumerable<HardwareDto>>("api/hardware") ?? [];
-        }
-        catch (Exception ex)
-        {
-            Snackbar.Add($"Error loading hardwares: {ex.Message}", Severity.Error);
-        }
-    }
-
-    protected override bool FilterFunc(FunctionalityDto dto)
+    protected override bool FilterFunc(CategoryDto dto)
     {
         return string.IsNullOrWhiteSpace(SearchString)
-            || dto.Description.Contains(SearchString, StringComparison.OrdinalIgnoreCase)
-            || dto.Name.Contains(SearchString, StringComparison.OrdinalIgnoreCase);
+            || dto.Name.Contains(SearchString, StringComparison.OrdinalIgnoreCase)
+            || (dto.Description?.Contains(SearchString, StringComparison.OrdinalIgnoreCase) ?? false);
     }
 
-    private async Task ShowCreateFunctionalityDialog()
+    private async Task ShowCreateItemDialog()
     {
         var parameters = new DialogParameters
         {
-            ["AllHardwares"] = _allHardwares,
-            ["OnCreate"] = EventCallback.Factory.Create<FunctionalityCreateDto>(this, HandleCreate)
+            ["OnCreate"] = EventCallback.Factory.Create<CategoryCreateDto>(this, HandleCreate)
         };
 
-        var dialog = await DialogService.ShowAsync<FunctionalityDialog>("Create Functionality", parameters);
+        var dialog = await DialogService.ShowAsync<CategoryDialog>("Create item", parameters);
         await dialog.Result;
     }
 
-    private async Task ShowEditFunctionalityDialog(FunctionalityDto functionality)
+    private async Task ShowEditItemDialog(CategoryDto dto)
     {
         var parameters = new DialogParameters
         {
-            ["Functionality"] = functionality,
-            ["AllHardwares"] = _allHardwares,
-            ["OnUpdate"] = EventCallback.Factory.Create<FunctionalityUpdateDto>(this, HandleUpdate)
+            ["Dto"] = dto,
+            ["OnUpdate"] = EventCallback.Factory.Create<CategoryUpdateDto>(this, HandleUpdate)
         };
 
-        var dialog = await DialogService.ShowAsync<FunctionalityDialog>("Edit Functionality", parameters);
+        var dialog = await DialogService.ShowAsync<CategoryDialog>("Edit item", parameters);
         await dialog.Result;
     }
 
-    private async Task HandleCreate(FunctionalityCreateDto createDto)
+    private async Task HandleCreate(CategoryCreateDto createDto)
     {
         try
         {
             var response = await HttpClient.PostAsJsonAsync(ApiEndpoint, createDto);
             response.EnsureSuccessStatusCode();
             await LoadData();
-            Snackbar.Add("Functionality created successfully!", Severity.Success);
+            Snackbar.Add("Item created successfully!", Severity.Success);
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error creating functionality: {ex.Message}", Severity.Error);
-            throw; // Re-throw to let dialog handle it
+            Snackbar.Add($"Error creating item: {ex.Message}", Severity.Error);
+            throw;
         }
     }
 
-    private async Task HandleUpdate(FunctionalityUpdateDto updateDto)
+    private async Task HandleUpdate(CategoryUpdateDto updateDto)
     {
         try
         {
             var response = await HttpClient.PutAsJsonAsync($"{ApiEndpoint}/{updateDto.Id}", updateDto);
             response.EnsureSuccessStatusCode();
             await LoadData();
-            Snackbar.Add("Functionality updated successfully!", Severity.Success);
+            Snackbar.Add("Item updated successfully!", Severity.Success);
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error updating functionality: {ex.Message}", Severity.Error);
-            throw; // Re-throw to let dialog handle it
+            Snackbar.Add($"Error updating item: {ex.Message}", Severity.Error);
+            throw;
         }
     }
 }

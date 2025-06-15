@@ -13,7 +13,7 @@ namespace CRUDaster.Infrastructure.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "brand",
+                name: "Brand",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
@@ -26,11 +26,25 @@ namespace CRUDaster.Infrastructure.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_brand", x => x.Id);
+                    table.PrimaryKey("PK_Brand", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
-                name: "document",
+                name: "Category",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Name = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
+                    Description = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Category", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Document",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
@@ -43,31 +57,11 @@ namespace CRUDaster.Infrastructure.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_document", x => x.Id);
+                    table.PrimaryKey("PK_Document", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
-                name: "Drafts",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Description = table.Column<string>(type: "text", nullable: false),
-                    Model3Dfile = table.Column<string>(type: "text", nullable: false),
-                    Model2Dfile = table.Column<string>(type: "text", nullable: false),
-                    ImageFile = table.Column<string>(type: "text", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    CreatorId = table.Column<string>(type: "text", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    UpdaterId = table.Column<string>(type: "text", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Drafts", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Functionalities",
+                name: "Functionality",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
@@ -77,11 +71,11 @@ namespace CRUDaster.Infrastructure.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Functionalities", x => x.Id);
+                    table.PrimaryKey("PK_Functionality", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
-                name: "Hardwares",
+                name: "Hardware",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
@@ -91,11 +85,11 @@ namespace CRUDaster.Infrastructure.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Hardwares", x => x.Id);
+                    table.PrimaryKey("PK_Hardware", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
-                name: "pim",
+                name: "Pim",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
@@ -110,11 +104,11 @@ namespace CRUDaster.Infrastructure.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_pim", x => x.Id);
+                    table.PrimaryKey("PK_Pim", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
-                name: "Products",
+                name: "Product",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
@@ -129,7 +123,7 @@ namespace CRUDaster.Infrastructure.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Products", x => x.Id);
+                    table.PrimaryKey("PK_Product", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -143,35 +137,52 @@ namespace CRUDaster.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_HardwareFunctionality", x => new { x.FunctionalityId, x.HardwareId });
                     table.ForeignKey(
-                        name: "FK_HardwareFunctionality_Functionalities_FunctionalityId",
+                        name: "FK_HardwareFunctionality_Functionality_FunctionalityId",
                         column: x => x.FunctionalityId,
-                        principalTable: "Functionalities",
+                        principalTable: "Functionality",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_HardwareFunctionality_Hardwares_HardwareId",
+                        name: "FK_HardwareFunctionality_Hardware_HardwareId",
                         column: x => x.HardwareId,
-                        principalTable: "Hardwares",
+                        principalTable: "Hardware",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_brand_Name",
-                table: "brand",
+                name: "IX_Brand_Name",
+                table: "Brand",
                 column: "Name",
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_document_Name",
-                table: "document",
+                name: "IX_Category_Description",
+                table: "Category",
+                column: "Description");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Category_Name",
+                table: "Category",
                 column: "Name",
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Functionalities_Name",
-                table: "Functionalities",
+                name: "IX_Document_Name",
+                table: "Document",
                 column: "Name",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Functionality_Name",
+                table: "Functionality",
+                column: "Name",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Hardware_Serial",
+                table: "Hardware",
+                column: "Serial",
                 unique: true);
 
             migrationBuilder.CreateIndex(
@@ -180,14 +191,8 @@ namespace CRUDaster.Infrastructure.Migrations
                 column: "HardwareId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Hardwares_Serial",
-                table: "Hardwares",
-                column: "Serial",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_pim_Name",
-                table: "pim",
+                name: "IX_Pim_Name",
+                table: "Pim",
                 column: "Name",
                 unique: true);
         }
@@ -196,28 +201,28 @@ namespace CRUDaster.Infrastructure.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "brand");
+                name: "Brand");
 
             migrationBuilder.DropTable(
-                name: "document");
+                name: "Category");
 
             migrationBuilder.DropTable(
-                name: "Drafts");
+                name: "Document");
 
             migrationBuilder.DropTable(
                 name: "HardwareFunctionality");
 
             migrationBuilder.DropTable(
-                name: "pim");
+                name: "Pim");
 
             migrationBuilder.DropTable(
-                name: "Products");
+                name: "Product");
 
             migrationBuilder.DropTable(
-                name: "Functionalities");
+                name: "Functionality");
 
             migrationBuilder.DropTable(
-                name: "Hardwares");
+                name: "Hardware");
         }
     }
 }

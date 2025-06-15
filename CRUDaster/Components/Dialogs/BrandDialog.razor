@@ -12,19 +12,6 @@
                                   RequiredError="Name is required"
                                   MaxLength="255" />
                 </MudItem>
-                <MudItem xs="12">
-                    <MudTextField @bind-Value="_description"
-                                  Label="Description"
-                                  MaxLength="255" />
-                </MudItem>
-                <MudItem xs="12">
-                    <MudTextField @bind-Value="_content"
-                                  Label="Content"
-                                  Required="true"
-                                  RequiredError="Content is required"
-                                  Lines="8"
-                                  MaxLength="65535" />
-                </MudItem>
             </MudGrid>
         </MudForm>
     </DialogContent>
@@ -50,9 +37,9 @@
     [CascadingParameter] IMudDialogInstance MudDialog { get; set; }
 
     // Parameters passed from parent
-    [Parameter] public PimDto? Dto { get; set; }
-    [Parameter] public EventCallback<PimCreateDto> OnCreate { get; set; }
-    [Parameter] public EventCallback<PimUpdateDto> OnUpdate { get; set; }
+    [Parameter] public BrandDto? Dto { get; set; }
+    [Parameter] public EventCallback<BrandCreateDto> OnCreate { get; set; }
+    [Parameter] public EventCallback<BrandUpdateDto> OnUpdate { get; set; }
 
     private MudForm _form;
     private bool _isValid;
@@ -68,8 +55,6 @@
         if (_isEdit && Dto != null)
         {
             _name = Dto.Name;
-            _description = Dto.Description ?? "";
-            _content = Dto.Content;
         }
     }
 
@@ -80,12 +65,12 @@
         {
             if (_isEdit && Dto != null)
             {
-                var updateDto = new PimUpdateDto(Dto.Id, _name, _description, _content);
+                var updateDto = new BrandUpdateDto(Dto.Id, _name);
                 await OnUpdate.InvokeAsync(updateDto);
             }
             else
             {
-                var createDto = new PimCreateDto(_name, _description, _content);
+                var createDto = new BrandCreateDto(_name);
                 await OnCreate.InvokeAsync(createDto);
             }
 
@@ -93,7 +78,7 @@
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error saving PIM: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error saving Brand: {ex.Message}", Severity.Error);
         }
         finally
         {

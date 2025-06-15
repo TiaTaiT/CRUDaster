@@ -8,7 +8,7 @@ namespace CRUDaster.Infrastructure.Data.Configurations
     {
         public void Configure(EntityTypeBuilder<Hardware> builder)
         {
-            builder.ToTable("Hardwares");
+            builder.ToTable("Hardware");
             builder.HasKey(h => h.Id);
 
             builder.Property(h => h.Serial)

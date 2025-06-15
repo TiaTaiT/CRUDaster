@@ -4,11 +4,11 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace CRUDaster.Infrastructure.Data.Configurations
 {
-    public class BrandConfiguration : IEntityTypeConfiguration<Brand>
+    public class CategoryConfiguration : IEntityTypeConfiguration<Category>
     {
-        public void Configure(EntityTypeBuilder<Brand> builder)
+        public void Configure(EntityTypeBuilder<Category> builder)
         {
-            builder.ToTable("Brand");
+            builder.ToTable("Category");
             builder.HasKey(f => f.Id);
 
             builder.Property(f => f.Name)
@@ -16,6 +16,11 @@ namespace CRUDaster.Infrastructure.Data.Configurations
                 .HasMaxLength(255);
             builder.HasIndex(f => f.Name)
                 .IsUnique();
+
+            builder.Property(f => f.Description)
+                .IsRequired()
+                .HasMaxLength(255);
+            builder.HasIndex(f => f.Description);
         }
     }
 }

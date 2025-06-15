@@ -4,11 +4,11 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace CRUDaster.Infrastructure.Data.Configurations
 {
-    public class BrandConfiguration : IEntityTypeConfiguration<Brand>
+    internal class StatusConfiguration : IEntityTypeConfiguration<Status>
     {
-        public void Configure(EntityTypeBuilder<Brand> builder)
+        public void Configure(EntityTypeBuilder<Status> builder)
         {
-            builder.ToTable("Brand");
+            builder.ToTable("Status");
             builder.HasKey(f => f.Id);
 
             builder.Property(f => f.Name)

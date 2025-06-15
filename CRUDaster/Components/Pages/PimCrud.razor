@@ -2,11 +2,10 @@
 @inherits BaseEntityPage<PimDto>
 @using CRUDaster.Components.Dialogs
 @using CRUDaster.Core.Application.DTOs
-@using CRUDaster.Core.Application.Interfaces
-@using CRUDaster.Core.Application.Interfaces.DtoServices
+@inject HttpClient HttpClient
 
 <MudContainer MaxWidth="MaxWidth.ExtraLarge">
-    <MudText Typo="Typo.h4" GutterBottom="true">Programs & methods</MudText>
+    <MudText Typo="Typo.h4" GutterBottom="true">P&Ms</MudText>
 
     <MudPaper Class="pa-4 mb-4">
         <MudGrid>
@@ -14,9 +13,9 @@
                 <MudButton Variant="Variant.Filled"
                            Color="Color.Primary"
                            StartIcon="@Icons.Material.Filled.Add"
-                           OnClick="@(() => ShowCreateDialog<PimDialog>("Create Items"))"
+                           OnClick="@(() => ShowCreateItemDialog())"
                            Class="mb-4">
-                    Add New Hardware
+                    Add New PIM
                 </MudButton>
             </MudItem>
             <MudItem xs="12" md="6" Class="d-flex justify-end">
@@ -37,7 +36,7 @@
     }
     else if (Items == null || !Items.Any())
     {
-        <MudAlert Severity="Severity.Info">No P&Ms found.</MudAlert>
+        <MudAlert Severity="Severity.Info">No PIMs found.</MudAlert>
     }
     else
     {
@@ -49,38 +48,59 @@
                   Filter="FilterFunc"
                   Loading="@Loading">
             <ColGroup>
+                <col style="width: 40px;" />
+                <col style="width: 15%;" />
                 <col style="width: 20%;" />
-                <col style="width: auto;" />
-                <col style="width: 30px;" />
+                <col style="width: 50%;" />
+                <col style="width: 10%;" />
+                <col style="width: 5%;" />
+                <col style="width: 100px;" />
             </ColGroup>
             <HeaderContent>
+                <MudTh>ID</MudTh>
                 <MudTh>Name</MudTh>
                 <MudTh>Description</MudTh>
+                <MudTh>Content</MudTh>
+                <MudTh>Creator</MudTh>
+                <MudTh>Created</MudTh>
                 <MudTh>Actions</MudTh>
             </HeaderContent>
             <RowTemplate>
-                <MudTd>@context.Name</MudTd>
-                <MudTd>@context.Description</MudTd>
+                <MudTd DataLabel="ID">@context.Id</MudTd>
+                <MudTd DataLabel="Name">@context.Name</MudTd>
+                <MudTd DataLabel="Description">@context.Description</MudTd>
+                <MudTd DataLabel="Content">
+                    @{
+                        var truncatedContent = context.Content.Length > 100
+                        ? context.Content.Substring(0, 100) + "..."
+                        : context.Content;
+                    }
+                    <MudTooltip Text="@context.Content">
+                        <span>@truncatedContent</span>
+                    </MudTooltip>
+                </MudTd>
+                <MudTd DataLabel="Creator">@context.CreatorId</MudTd>
+                <MudTd DataLabel="Created">@context.CreatedAt.ToString("MM/dd/yyyy")</MudTd>
                 <MudTd>
-                    <MudStack Row="true">
+                    <MudStack Row="true" Spacing="1">
                         <MudIconButton Icon="@Icons.Material.Filled.Edit"
-                                       OnClick="@(() => ShowEditDialog<PimDialog>("Edit Item", context.Id))" />
+                                       Color="Color.Primary"
+                                       Size="Size.Small"
+                                       Title="Edit"
+                                       OnClick="@(() => ShowEditItemDialog(context))" />
                         <MudIconButton Icon="@Icons.Material.Filled.Delete"
                                        Color="Color.Error"
-                                       OnClick="@(() =>
-                                            ShowDeleteDialog(
-                                                context.Name,
-                                                context.Id
-                                            )
-                                        )" />
-                </MudStack>
-            </MudTd>
-        </RowTemplate>
-        <PagerContent>
-            <MudTablePager />
-        </PagerContent>
-    </MudTable>
-        }
+                                       Size="Size.Small"
+                                       Title="Delete"
+                                       OnClick="@(() => ShowDeleteDialog(context.Name, context.Id))" />
+                    </MudStack>
+                </MudTd>
+            </RowTemplate>
+            <PagerContent>
+                <MudTablePager />
+            </PagerContent>
+        </MudTable>
+    }
 </MudContainer>
 
 @code {
@@ -89,12 +109,63 @@
     protected override bool FilterFunc(PimDto dto)
     {
         return string.IsNullOrWhiteSpace(SearchString)
-            || dto.Description.Contains(SearchString, StringComparison.OrdinalIgnoreCase);
+            || dto.Name.Contains(SearchString, StringComparison.OrdinalIgnoreCase)
+            || (dto.Description?.Contains(SearchString, StringComparison.OrdinalIgnoreCase) ?? false)
+            || dto.Content.Contains(SearchString, StringComparison.OrdinalIgnoreCase);
     }
 
-    private async Task DeleteFunctionalityAsync(object id)
+    private async Task ShowCreateItemDialog()
     {
-        var response = await HttpClient.DeleteAsync($"{ApiEndpoint}/{id}");
-        response.EnsureSuccessStatusCode();
+        var parameters = new DialogParameters
+        {
+            ["OnCreate"] = EventCallback.Factory.Create<PimCreateDto>(this, HandleCreate)
+        };
+
+        var dialog = await DialogService.ShowAsync<PimDialog>("Create item", parameters);
+        await dialog.Result;
+    }
+
+    private async Task ShowEditItemDialog(PimDto pim)
+    {
+        var parameters = new DialogParameters
+        {
+            ["Dto"] = pim,
+            ["OnUpdate"] = EventCallback.Factory.Create<PimUpdateDto>(this, HandleUpdate)
+        };
+
+        var dialog = await DialogService.ShowAsync<PimDialog>("Edit item", parameters);
+        await dialog.Result;
+    }
+
+    private async Task HandleCreate(PimCreateDto createDto)
+    {
+        try
+        {
+            var response = await HttpClient.PostAsJsonAsync(ApiEndpoint, createDto);
+            response.EnsureSuccessStatusCode();
+            await LoadData();
+            Snackbar.Add("Item created successfully!", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error creating item: {ex.Message}", Severity.Error);
+            throw;
+        }
+    }
+
+    private async Task HandleUpdate(PimUpdateDto updateDto)
+    {
+        try
+        {
+            var response = await HttpClient.PutAsJsonAsync($"{ApiEndpoint}/{updateDto.Id}", updateDto);
+            response.EnsureSuccessStatusCode();
+            await LoadData();
+            Snackbar.Add("Item updated successfully!", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error updating item: {ex.Message}", Severity.Error);
+            throw;
+        }
     }
 }

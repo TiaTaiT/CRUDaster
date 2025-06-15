@@ -8,7 +8,7 @@ namespace CRUDaster.Infrastructure.Data.Configurations
     {
         public void Configure(EntityTypeBuilder<Functionality> builder)
         {
-            builder.ToTable("Functionalities");
+            builder.ToTable("Functionality");
             builder.HasKey(f => f.Id);
 
             builder.Property(f => f.Name)

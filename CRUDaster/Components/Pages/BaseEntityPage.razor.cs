@@ -1,7 +1,6 @@
 ﻿using CRUDaster.Components.CommonDialogs;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
-using static System.Net.WebRequestMethods;
 
 namespace CRUDaster.Components.Pages
 {
@@ -15,7 +14,6 @@ namespace CRUDaster.Components.Pages
         protected IEnumerable<TDto> Items = [];
         protected bool Loading = true;
         protected string SearchString = "";
-        private HttpClient _http;
 
         /// <summary>
         /// Must be overridden to define the API endpoint (e.g. "api/brands")
