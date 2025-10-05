@@ -159,7 +159,7 @@
     <DialogActions>
         <MudButton OnClick="Cancel">Cancel</MudButton>
         <MudButton Color="Color.Primary"
-                   Disabled="@(!_isValid || _processing)"
+                   Disabled="@(!_isFormValid || _processing)"
                    OnClick="Submit">
             @if (_processing)
             {
@@ -210,6 +210,8 @@
     private PimDto? _selectedPim;
     private IEnumerable<ProtocolDto> _selectedProtocols = new List<ProtocolDto>();
 
+    private bool _isFormValid => IsRequiredFieldsValid();
+
     protected override void OnParametersSet()
     {
         if (_isEdit && Component != null)
@@ -233,6 +235,22 @@
                 .Where(p => Component.ProtocolDtos.Any(cp => cp.Id == p.Id))
                 .ToHashSet(new PropertyEqualityComparer<ProtocolDto, int>(p => p.Id));
         }
+    }
+
+    private bool IsRequiredFieldsValid()
+    {
+        // Check if all required fields have values
+        var isNameValid = !string.IsNullOrWhiteSpace(_name);
+        var isDescriptionValid = !string.IsNullOrWhiteSpace(_description);
+        var isVendorCodeValid = !string.IsNullOrWhiteSpace(_vendorCode);
+        var isStatusValid = _selectedStatus != null;
+        var isCategoryValid = _selectedCategory != null;
+        var isBrandValid = _selectedBrand != null;
+        var isModelValid = _selectedModel != null;
+        var isPimValid = _selectedPim != null;
+
+        return isNameValid && isDescriptionValid &&
+               isStatusValid && isCategoryValid && isBrandValid;
     }
 
     private async Task Submit()

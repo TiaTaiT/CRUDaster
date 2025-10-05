@@ -31,8 +31,10 @@ namespace CRUDaster.Core.Application.Services
             var status = await _statusRepository.GetByIdAsync(dto.StatusId) ?? throw new Exception("Status ID not found");
             var category = await _categoryRepository.GetByIdAsync(dto.CategoryId) ?? throw new Exception("Category ID not found");
             var brand = await _brandRepository.GetByIdAsync(dto.BrandId) ?? throw new Exception("Brand ID not found");
-            var model = await _modelRepository.GetByIdAsync(dto.ModelId) ?? throw new Exception("Model ID not found");
-            var pim = await _pimRepository.GetByIdAsync(dto.PimId) ?? throw new Exception("P&M ID not found");
+            
+            var model = dto.ModelId != 0 ? await _modelRepository.GetByIdAsync((int)dto.ModelId) ?? throw new Exception("Model ID not found") : null;
+            var pim = dto.PimId != 0 ? await _pimRepository.GetByIdAsync((int)dto.PimId) ?? throw new Exception("P&M ID not found") : null;
+
             var protocols = (await _protocolRepository.GetAllAsync())
                 .Where(x => dto.ProtocolIds.Contains(x.Id))
                 .ToList();

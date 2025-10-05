@@ -57,8 +57,8 @@ namespace CRUDaster.Core.Application.DTOs
         [Required] int StatusId,
         [Required] int CategoryId,
         [Required] int BrandId,
-        [Required] int ModelId,
-        [Required] int PimId,
+        int ModelId,
+        int PimId,
         IEnumerable<int> ProtocolIds);
 
     public record ComponentUpdateDto(
