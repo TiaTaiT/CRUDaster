@@ -1,0 +1,304 @@
+﻿@using CRUDaster.Core.Application.DTOs
+@using CRUDaster.Comparers
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <DialogContent>
+        <MudForm @ref="form" @bind-IsValid="@_isValid">
+            <MudGrid>
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="_name"
+                                  Label="Name"
+                                  Required="true"
+                                  RequiredError="Name is required"
+                                  MaxLength="255" />
+                </MudItem>
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="_alterName"
+                                  Label="Alternative Name"
+                                  MaxLength="255" />
+                </MudItem>
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="_description"
+                                  Label="Description"
+                                  Required="true"
+                                  RequiredError="Description is required"
+                                  MaxLength="255" />
+                </MudItem>
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="_vendorCode"
+                                  Label="Vendor Code"
+                                  Required="true"
+                                  RequiredError="Vendor Code is required"
+                                  MaxLength="255" />
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudSwitch @bind-Value="_canHasChildren"
+                               Label="Can Have Children" />
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudSwitch @bind-Value="_virtual"
+                               Label="Virtual" />
+                </MudItem>
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="_erpCode"
+                                  Label="ERP Code"
+                                  MaxLength="32" />
+                </MudItem>
+                <MudItem xs="12" sm="4">
+                    <MudTextField @bind-Value="_length"
+                                  Label="Length"
+                                  Variant="Variant.Outlined"
+                                  Type="InputType.Number"
+                                  Adornment="Adornment.Start"
+                                  AdornmentIcon="@Icons.Material.Filled.LinearScale" />
+                </MudItem>
+                <MudItem xs="12" sm="4">
+                    <MudTextField @bind-Value="_width"
+                                  Label="Width"
+                                  Variant="Variant.Outlined"
+                                  Type="InputType.Number"
+                                  Adornment="Adornment.Start"
+                                  AdornmentIcon="@Icons.Material.Filled.LinearScale" />
+                </MudItem>
+                <MudItem xs="12" sm="4">
+                    <MudTextField @bind-Value="_height"
+                                  Label="Height"
+                                  Variant="Variant.Outlined"
+                                  Type="InputType.Number"
+                                  Adornment="Adornment.Start"
+                                  AdornmentIcon="@Icons.Material.Filled.LinearScale" />
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudSelect T="StatusDto"
+                               Label="Status"
+                               @bind-Value="_selectedStatus"
+                               Variant="Variant.Outlined"
+                               Required="true"
+                               RequiredError="Status is required"
+                               ToStringFunc="f => f?.Name ?? string.Empty">
+                        @foreach (var status in AllStatuses)
+                        {
+                            <MudSelectItem Value="@status">@status.Name</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudSelect T="CategoryDto"
+                               Label="Category"
+                               @bind-Value="_selectedCategory"
+                               Variant="Variant.Outlined"
+                               Required="true"
+                               RequiredError="Category is required"
+                               ToStringFunc="f => f?.Name ?? string.Empty">
+                        @foreach (var category in AllCategories)
+                        {
+                            <MudSelectItem Value="@category">@category.Name</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudSelect T="BrandDto"
+                               Label="Brand"
+                               @bind-Value="_selectedBrand"
+                               Variant="Variant.Outlined"
+                               Required="true"
+                               RequiredError="Brand is required"
+                               ToStringFunc="f => f?.Name ?? string.Empty">
+                        @foreach (var brand in AllBrands)
+                        {
+                            <MudSelectItem Value="@brand">@brand.Name</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudSelect T="ModelDto"
+                               Label="Model"
+                               @bind-Value="_selectedModel"
+                               Variant="Variant.Outlined"
+                               Required="true"
+                               RequiredError="Model is required"
+                               ToStringFunc="f => f?.Name ?? string.Empty">
+                        @foreach (var model in AllModels)
+                        {
+                            <MudSelectItem Value="@model">@model.Name</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudSelect T="PimDto"
+                               Label="PIM"
+                               @bind-Value="_selectedPim"
+                               Variant="Variant.Outlined"
+                               Required="true"
+                               RequiredError="PIM is required"
+                               ToStringFunc="f => f?.Name ?? string.Empty">
+                        @foreach (var pim in AllPims)
+                        {
+                            <MudSelectItem Value="@pim">@pim.Name</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="12">
+                    <MudSelect T="ProtocolDto"
+                               Label="Protocols"
+                               @bind-SelectedValues="_selectedProtocols"
+                               MultiSelection="true"
+                               Variant="Variant.Outlined"
+                               ToStringFunc="f => f?.Name ?? string.Empty"
+                               Comparer="new PropertyEqualityComparer<ProtocolDto, int>(f => f.Id)">
+                        @foreach (var protocol in AllProtocols)
+                        {
+                            <MudSelectItem Value="@protocol">@protocol.Name</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+            </MudGrid>
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary"
+                   Disabled="@(!_isValid || _processing)"
+                   OnClick="Submit">
+            @if (_processing)
+            {
+                <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                <MudText Class="ms-2">Processing</MudText>
+            }
+            else
+            {
+                @(_isEdit ? "Update" : "Create")
+            }
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; }
+
+    // Parameters passed from parent
+    [Parameter] public ComponentDto? Component { get; set; }
+    [Parameter] public IEnumerable<StatusDto> AllStatuses { get; set; } = [];
+    [Parameter] public IEnumerable<CategoryDto> AllCategories { get; set; } = [];
+    [Parameter] public IEnumerable<BrandDto> AllBrands { get; set; } = [];
+    [Parameter] public IEnumerable<ModelDto> AllModels { get; set; } = [];
+    [Parameter] public IEnumerable<PimDto> AllPims { get; set; } = [];
+    [Parameter] public IEnumerable<ProtocolDto> AllProtocols { get; set; } = [];
+    [Parameter] public EventCallback<ComponentCreateDto> OnCreate { get; set; }
+    [Parameter] public EventCallback<ComponentUpdateDto> OnUpdate { get; set; }
+
+    private MudForm form;
+    private bool _isValid;
+    private bool _processing;
+    private bool _isEdit => Component != null;
+
+    private string _name = "";
+    private string _alterName = "";
+    private string _description = "";
+    private string _vendorCode = "";
+    private bool _canHasChildren = false;
+    private bool _virtual = false;
+    private string _erpCode = "";
+    private double _length = 0;
+    private double _width = 0;
+    private double _height = 0;
+    private StatusDto? _selectedStatus;
+    private CategoryDto? _selectedCategory;
+    private BrandDto? _selectedBrand;
+    private ModelDto? _selectedModel;
+    private PimDto? _selectedPim;
+    private IEnumerable<ProtocolDto> _selectedProtocols = new List<ProtocolDto>();
+
+    protected override void OnParametersSet()
+    {
+        if (_isEdit && Component != null)
+        {
+            _name = Component.Name;
+            _alterName = Component.AlterName;
+            _description = Component.Description;
+            _vendorCode = Component.VendorCode;
+            _canHasChildren = Component.CanHasChildren;
+            _virtual = Component.Virtual;
+            _erpCode = Component.ErpCode;
+            _length = Component.Length;
+            _width = Component.Width;
+            _height = Component.Height;
+            _selectedStatus = AllStatuses.FirstOrDefault(s => s.Id == Component.Status.Id);
+            _selectedCategory = AllCategories.FirstOrDefault(c => c.Id == Component.Category.Id);
+            _selectedBrand = AllBrands.FirstOrDefault(b => b.Id == Component.Brand?.Id);
+            _selectedModel = AllModels.FirstOrDefault(m => m.Id == Component.Model?.Id);
+            _selectedPim = AllPims.FirstOrDefault(p => p.Id == Component.Pim?.Id);
+            _selectedProtocols = AllProtocols
+                .Where(p => Component.ProtocolDtos.Any(cp => cp.Id == p.Id))
+                .ToHashSet(new PropertyEqualityComparer<ProtocolDto, int>(p => p.Id));
+        }
+    }
+
+    private async Task Submit()
+    {
+        _processing = true;
+        try
+        {
+            var selectedProtocolIds = _selectedProtocols.Select(p => p.Id);
+
+            if (_isEdit && Component != null)
+            {
+                var updateDto = new ComponentUpdateDto(
+                    Component.Id,
+                    _name,
+                    _alterName,
+                    _description,
+                    _vendorCode,
+                    _canHasChildren,
+                    _virtual,
+                    _erpCode,
+                    _length,
+                    _width,
+                    _height,
+                    _selectedStatus?.Id ?? 0,
+                    _selectedCategory?.Id ?? 0,
+                    _selectedBrand?.Id ?? 0,
+                    _selectedModel?.Id ?? 0,
+                    _selectedPim?.Id ?? 0,
+                    selectedProtocolIds
+                );
+                await OnUpdate.InvokeAsync(updateDto);
+            }
+            else
+            {
+                var createDto = new ComponentCreateDto(
+                    _name,
+                    _alterName,
+                    _description,
+                    _vendorCode,
+                    _canHasChildren,
+                    _virtual,
+                    _erpCode,
+                    _length,
+                    _width,
+                    _height,
+                    _selectedStatus?.Id ?? 0,
+                    _selectedCategory?.Id ?? 0,
+                    _selectedBrand?.Id ?? 0,
+                    _selectedModel?.Id ?? 0,
+                    _selectedPim?.Id ?? 0,
+                    selectedProtocolIds
+                );
+                await OnCreate.InvokeAsync(createDto);
+            }
+
+            MudDialog.Close(DialogResult.Ok(true));
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error saving Component: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _processing = false;
+        }
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+}

@@ -1,0 +1,178 @@
+﻿@page "/protocol"
+@inherits BaseEntityPage<ProtocolDto>
+@using CRUDaster.Components.Dialogs
+@using CRUDaster.Core.Application.DTOs
+@using CRUDaster.Core.Application.Interfaces
+@using CRUDaster.Core.Application.Interfaces.DtoServices
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge">
+    <MudText Typo="Typo.h4" GutterBottom="true">Features</MudText>
+    <MudPaper Class="pa-4 mb-4">
+        <MudGrid>
+            <MudItem xs="12" md="6">
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           StartIcon="@Icons.Material.Filled.Add"
+                           OnClick="@(() => ShowCreateProtocolDialog())"
+                           Class="mb-4">
+                    Add New Protocol
+                </MudButton>
+            </MudItem>
+            <MudItem xs="12" md="6" Class="d-flex justify-end">
+                <MudTextField @bind-Value="SearchString"
+                              Placeholder="Search"
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Filled.Search"
+                              IconSize="Size.Medium"
+                              Class="mt-0"
+                              Immediate="true" />
+            </MudItem>
+        </MudGrid>
+    </MudPaper>
+
+    @if (Loading)
+    {
+        <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+    }
+    else if (Items == null || !Items.Any())
+    {
+        <MudAlert Severity="Severity.Info">No Protocols found.</MudAlert>
+    }
+    else
+    {
+        <MudTable Items="@Items"
+                  Dense="true"
+                  Hover="true"
+                  Bordered="true"
+                  Striped="true"
+                  Filter="FilterFunc"
+                  Loading="@Loading">
+            <ColGroup>
+                <col style="width: 40px;" />
+                <col style="width: 25%;" />
+                <col style="width: 25%;" />
+                <col style="width: 35%;" />
+                <col style="width: 30px;" />
+            </ColGroup>
+            <HeaderContent>
+                <MudTh>ID</MudTh>
+                <MudTh>Name</MudTh>
+                <MudTh>Description</MudTh>
+                <MudTh>Components</MudTh>
+                <MudTh>Actions</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="ID">@context.Id</MudTd>
+                <MudTd DataLabel="Name">@context.Name</MudTd>
+                <MudTd DataLabel="Description">@context.Description</MudTd>
+                <MudTd DataLabel="Components">
+                    @string.Join(", ", context.Components.Select(h => h.Name))
+                </MudTd>
+                <MudTd>
+                    <MudStack Row="true" Spacing="1">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                       Color="Color.Primary"
+                                       Size="Size.Small"
+                                       Title="Edit"
+                                       OnClick="@(() => ShowEditProtocolDialog(context))" />
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                       Color="Color.Error"
+                                       Size="Size.Small"
+                                       Title="Delete"
+                                       OnClick="@(() => ShowDeleteDialog(context.Description, context.Id))" />
+                    </MudStack>
+                </MudTd>
+            </RowTemplate>
+            <PagerContent>
+                <MudTablePager />
+            </PagerContent>
+        </MudTable>
+    }
+</MudContainer>
+
+@code {
+    protected override string ApiEndpoint => "api/protocol";
+    private IEnumerable<ComponentDto> _allComponents = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadHardwares();
+        await base.OnInitializedAsync();
+    }
+
+    private async Task LoadHardwares()
+    {
+        try
+        {
+            _allComponents = await HttpClient.GetFromJsonAsync<IEnumerable<ComponentDto>>("api/component") ?? [];
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error loading components: {ex.Message}", Severity.Error);
+        }
+    }
+
+    protected override bool FilterFunc(ProtocolDto dto)
+    {
+        return string.IsNullOrWhiteSpace(SearchString)
+            || dto.Description.Contains(SearchString, StringComparison.OrdinalIgnoreCase)
+            || dto.Name.Contains(SearchString, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private async Task ShowCreateProtocolDialog()
+    {
+        var parameters = new DialogParameters
+        {
+            ["AllComponents"] = _allComponents,
+            ["OnCreate"] = EventCallback.Factory.Create<ProtocolCreateDto>(this, HandleCreate)
+        };
+
+        var dialog = await DialogService.ShowAsync<ProtocolDialog>("Create Protocol", parameters);
+        await dialog.Result;
+    }
+
+    private async Task ShowEditProtocolDialog(ProtocolDto Protocol)
+    {
+        var parameters = new DialogParameters
+        {
+            ["Protocol"] = Protocol,
+            ["AllComponents"] = _allComponents,
+            ["OnUpdate"] = EventCallback.Factory.Create<ProtocolUpdateDto>(this, HandleUpdate)
+        };
+
+        var dialog = await DialogService.ShowAsync<ProtocolDialog>("Edit Protocol", parameters);
+        await dialog.Result;
+    }
+
+    private async Task HandleCreate(ProtocolCreateDto createDto)
+    {
+        try
+        {
+            var response = await HttpClient.PostAsJsonAsync(ApiEndpoint, createDto);
+            response.EnsureSuccessStatusCode();
+            await LoadData();
+            Snackbar.Add("Protocol created successfully!", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error creating Protocol: {ex.Message}", Severity.Error);
+            throw; // Re-throw to let dialog handle it
+        }
+    }
+
+    private async Task HandleUpdate(ProtocolUpdateDto updateDto)
+    {
+        try
+        {
+            var response = await HttpClient.PutAsJsonAsync($"{ApiEndpoint}/{updateDto.Id}", updateDto);
+            response.EnsureSuccessStatusCode();
+            await LoadData();
+            Snackbar.Add("Protocol updated successfully!", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error updating Protocol: {ex.Message}", Severity.Error);
+            throw; // Re-throw to let dialog handle it
+        }
+    }
+}

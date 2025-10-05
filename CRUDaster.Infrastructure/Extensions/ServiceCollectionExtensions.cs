@@ -23,7 +23,7 @@ namespace CRUDaster.Infrastructure.Extensions
 
             // Register repositories
             //services.AddScoped(typeof(IRepository<>), typeof(RepositoryBase<>));
-            services.AddScoped<IProductRepository, ProductRepository>();
+            services.AddScoped<IComponentRepository, ComponentRepository>();
             services.AddScoped<IDraftRepository, DraftRepository>();
             services.AddScoped<IHardwareRepository, HardwareRepository>();
             services.AddScoped<IFunctionalityRepository, FunctionalityRepository>();
@@ -33,7 +33,10 @@ namespace CRUDaster.Infrastructure.Extensions
             services.AddScoped<ICategoryRepository, CategoryRepository>();
             services.AddScoped<IDocumentRepository, DocumentRepository>();
             services.AddScoped<IStatusRepository, StatusRepository>();
+            services.AddScoped<IProtocolRepository, ProtocolRepository>();
+            services.AddScoped<IModelRepository, ModelRepository>();
 
+            services.AddScoped<IComponentService, ComponentService>();
             services.AddScoped<IHardwareService, HardwareService>();
             services.AddScoped<IFunctionalityService, FunctionalityService>();
             services.AddScoped<IPimService, PimService>();
@@ -41,6 +44,8 @@ namespace CRUDaster.Infrastructure.Extensions
             services.AddScoped<ICategoryService, CategoryService>();
             services.AddScoped<IDocumentService, DocumentService>();
             services.AddScoped<IStatusService, StatusService>();
+            services.AddScoped<IProtocolService, ProtocolService>();
+            services.AddScoped<IModelService, ModelService>();
 
             return services;
         }

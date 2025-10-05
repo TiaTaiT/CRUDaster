@@ -1,5 +1,96 @@
-﻿<h3>CategoryDialog</h3>
+﻿@using CRUDaster.Core.Application.DTOs
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <DialogContent>
+        <MudForm @ref="_form" @bind-IsValid="@_isValid">
+            <MudGrid>
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="_name"
+                                  Label="Name"
+                                  Required="true"
+                                  RequiredError="Name is required"
+                                  MaxLength="255" />
+                </MudItem>
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="_description"
+                                  Label="Description"
+                                  MaxLength="255" />
+                </MudItem>
+            </MudGrid>
+        </MudForm>
+
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary"
+                   Disabled="@(!_isValid || _processing)"
+                   OnClick="Submit">
+            @if (_processing)
+            {
+                <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                <MudText Class="ms-2">Processing</MudText>
+            }
+            else
+            {
+                @(_isEdit ? "Update" : "Create")
+            }
+        </MudButton>
+    </DialogActions>
+</MudDialog>
 
 @code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; }
 
+    // Parameters passed from parent
+    [Parameter] public CategoryDto? Dto { get; set; }
+    [Parameter] public EventCallback<CategoryCreateDto> OnCreate { get; set; }
+    [Parameter] public EventCallback<CategoryUpdateDto> OnUpdate { get; set; }
+
+    private MudForm _form;
+    private bool _isValid;
+    private bool _processing;
+    private bool _isEdit => Dto != null;
+
+    private string _name = "";
+    private string _description = "";
+    private string _content = "";
+
+    protected override void OnParametersSet()
+    {
+        if (_isEdit && Dto != null)
+        {
+            _name = Dto.Name;
+        }
+    }
+
+    private async Task Submit()
+    {
+        _processing = true;
+        try
+        {
+            if (_isEdit && Dto != null)
+            {
+                var updateDto = new CategoryUpdateDto(Dto.Id, _name, _description);
+                await OnUpdate.InvokeAsync(updateDto);
+            }
+            else
+            {
+                var createDto = new CategoryCreateDto(_name, _description);
+                await OnCreate.InvokeAsync(createDto);
+            }
+
+            MudDialog.Close(DialogResult.Ok(true));
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error saving Category: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _processing = false;
+        }
+    }
+
+    private void Cancel() => MudDialog.Cancel();
 }

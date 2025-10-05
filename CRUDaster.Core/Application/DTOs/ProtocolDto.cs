@@ -2,24 +2,24 @@
 
 namespace CRUDaster.Core.Application.DTOs
 {
-    public record FunctionalityCreateDto(
+    public record ProtocolCreateDto(
         [Required][StringLength(255)] string Name,
         [Required] string Description,
-        IEnumerable<int> HardwareIds);
+        IEnumerable<int> ComponentIds);
 
-    public record FunctionalityUpdateDto(
+    public record ProtocolUpdateDto(
         [Required] int Id,
         [StringLength(255)] string? Name,
         string? Description,
-        IEnumerable<int>? HardwareIds);
+        IEnumerable<int>? ComponentIds);
 
-    public record FunctionalityDto(
+    public record ProtocolDto(
         int Id,
         string Name,
         string Description,
-        IEnumerable<HardwareSimpleDto> Hardwares);
+        IEnumerable<ComponentSimpleDto> Components);
 
-    public record FunctionalitySimpleDto(
+    public record ProtocolSimpleDto(
         int Id,
         string Name);
 }

@@ -3,6 +3,7 @@ using System;
 using CRUDaster.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CRUDaster.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251004171417_Component")]
+    partial class Component
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -231,7 +234,7 @@ namespace CRUDaster.Infrastructure.Migrations
 
                     b.HasIndex("StatusId");
 
-                    b.ToTable("Component", (string)null);
+                    b.ToTable("Product", (string)null);
                 });
 
             modelBuilder.Entity("CRUDaster.Core.Domain.Entities.Document", b =>
@@ -413,21 +416,6 @@ namespace CRUDaster.Infrastructure.Migrations
                     b.ToTable("Status", (string)null);
                 });
 
-            modelBuilder.Entity("ComponentProtocol", b =>
-                {
-                    b.Property<int>("ProtocolId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("ComponentId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("ProtocolId", "ComponentId");
-
-                    b.HasIndex("ComponentId");
-
-                    b.ToTable("ComponentProtocol");
-                });
-
             modelBuilder.Entity("HardwareFunctionality", b =>
                 {
                     b.Property<int>("FunctionalityId")
@@ -441,6 +429,21 @@ namespace CRUDaster.Infrastructure.Migrations
                     b.HasIndex("HardwareId");
 
                     b.ToTable("HardwareFunctionality");
+                });
+
+            modelBuilder.Entity("ProductProtocol", b =>
+                {
+                    b.Property<int>("ProductId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ProtocolId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("ProductId", "ProtocolId");
+
+                    b.HasIndex("ProtocolId");
+
+                    b.ToTable("ProductProtocol");
                 });
 
             modelBuilder.Entity("CRUDaster.Core.Domain.Entities.Component", b =>
@@ -483,21 +486,6 @@ namespace CRUDaster.Infrastructure.Migrations
                     b.Navigation("Status");
                 });
 
-            modelBuilder.Entity("ComponentProtocol", b =>
-                {
-                    b.HasOne("CRUDaster.Core.Domain.Entities.Component", null)
-                        .WithMany()
-                        .HasForeignKey("ComponentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("CRUDaster.Core.Domain.Entities.Protocol", null)
-                        .WithMany()
-                        .HasForeignKey("ProtocolId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("HardwareFunctionality", b =>
                 {
                     b.HasOne("CRUDaster.Core.Domain.Entities.AppUserRights.Functionality", null)
@@ -509,6 +497,21 @@ namespace CRUDaster.Infrastructure.Migrations
                     b.HasOne("CRUDaster.Core.Domain.Entities.AppUserRights.Hardware", null)
                         .WithMany()
                         .HasForeignKey("HardwareId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("ProductProtocol", b =>
+                {
+                    b.HasOne("CRUDaster.Core.Domain.Entities.Component", null)
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("CRUDaster.Core.Domain.Entities.Protocol", null)
+                        .WithMany()
+                        .HasForeignKey("ProtocolId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

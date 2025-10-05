@@ -1,0 +1,218 @@
+﻿@page "/component"
+@inherits BaseEntityPage<ComponentDto>
+@using CRUDaster.Components.Dialogs
+@using CRUDaster.Core.Application.DTOs
+@using CRUDaster.Core.Application.Interfaces
+@using CRUDaster.Core.Application.Interfaces.DtoServices
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge">
+    <MudText Typo="Typo.h4" GutterBottom="true">Components</MudText>
+    <MudPaper Class="pa-4 mb-4">
+        <MudGrid>
+            <MudItem xs="12" md="6">
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           StartIcon="@Icons.Material.Filled.Add"
+                           OnClick="@(() => ShowCreateComponentDialog())"
+                           Class="mb-4">
+                    Add New Component
+                </MudButton>
+            </MudItem>
+            <MudItem xs="12" md="6" Class="d-flex justify-end">
+                <MudTextField @bind-Value="SearchString"
+                              Placeholder="Search"
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Filled.Search"
+                              IconSize="Size.Medium"
+                              Class="mt-0"
+                              Immediate="true" />
+            </MudItem>
+        </MudGrid>
+    </MudPaper>
+
+    @if (Loading)
+    {
+        <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+    }
+    else if (Items == null || !Items.Any())
+    {
+        <MudAlert Severity="Severity.Info">No Components found.</MudAlert>
+    }
+    else
+    {
+        <MudTable Items="@Items"
+                  Dense="true"
+                  Hover="true"
+                  Bordered="true"
+                  Striped="true"
+                  Filter="FilterFunc"
+                  Loading="@Loading">
+            <ColGroup>
+                <col style="width: 40px;" />
+                <col style="width: 15%;" />
+                <col style="width: 15%;" />
+                <col style="width: 20%;" />
+                <col style="width: 10%;" />
+                <col style="width: 10%;" />
+                <col style="width: 15%;" />
+                <col style="width: 30px;" />
+            </ColGroup>
+            <HeaderContent>
+                <MudTh>ID</MudTh>
+                <MudTh>Name</MudTh>
+                <MudTh>Alternative Name</MudTh>
+                <MudTh>Description</MudTh>
+                <MudTh>Brand</MudTh>
+                <MudTh>Category</MudTh>
+                <MudTh>Status</MudTh>
+                <MudTh>Actions</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="ID">@context.Id</MudTd>
+                <MudTd DataLabel="Name">@context.Name</MudTd>
+                <MudTd DataLabel="Alternative Name">@context.AlterName</MudTd>
+                <MudTd DataLabel="Description">@context.Description</MudTd>
+                <MudTd DataLabel="Brand">@context.Brand?.Name</MudTd>
+                <MudTd DataLabel="Category">@context.Category.Name</MudTd>
+                <MudTd DataLabel="Status">@context.Status.Name</MudTd>
+                <MudTd>
+                    <MudStack Row="true" Spacing="1">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                       Color="Color.Primary"
+                                       Size="Size.Small"
+                                       Title="Edit"
+                                       OnClick="@(() => ShowEditComponentDialog(context))" />
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                       Color="Color.Error"
+                                       Size="Size.Small"
+                                       Title="Delete"
+                                       OnClick="@(() => ShowDeleteDialog(context.Name, context.Id))" />
+                    </MudStack>
+                </MudTd>
+            </RowTemplate>
+            <PagerContent>
+                <MudTablePager />
+            </PagerContent>
+        </MudTable>
+    }
+</MudContainer>
+
+@code {
+    protected override string ApiEndpoint => "api/component";
+    private IEnumerable<StatusDto> _allStatuses = [];
+    private IEnumerable<CategoryDto> _allCategories = [];
+    private IEnumerable<BrandDto> _allBrands = [];
+    private IEnumerable<ModelDto> _allModels = [];
+    private IEnumerable<PimDto> _allPims = [];
+    private IEnumerable<ProtocolDto> _allProtocols = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadReferenceData();
+        await base.OnInitializedAsync();
+    }
+
+    private async Task LoadReferenceData()
+    {
+        try
+        {
+            var statusesTask = HttpClient.GetFromJsonAsync<IEnumerable<StatusDto>>("api/status");
+            var categoriesTask = HttpClient.GetFromJsonAsync<IEnumerable<CategoryDto>>("api/category");
+            var brandsTask = HttpClient.GetFromJsonAsync<IEnumerable<BrandDto>>("api/brand");
+            var modelsTask = HttpClient.GetFromJsonAsync<IEnumerable<ModelDto>>("api/model");
+            var pimsTask = HttpClient.GetFromJsonAsync<IEnumerable<PimDto>>("api/pim");
+            var protocolsTask = HttpClient.GetFromJsonAsync<IEnumerable<ProtocolDto>>("api/protocol");
+
+            await Task.WhenAll(statusesTask, categoriesTask, brandsTask, modelsTask, pimsTask, protocolsTask);
+
+            _allStatuses = await statusesTask ?? [];
+            _allCategories = await categoriesTask ?? [];
+            _allBrands = await brandsTask ?? [];
+            _allModels = await modelsTask ?? [];
+            _allPims = await pimsTask ?? [];
+            _allProtocols = await protocolsTask ?? [];
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error loading reference data: {ex.Message}", Severity.Error);
+        }
+    }
+
+    protected override bool FilterFunc(ComponentDto dto)
+    {
+        return string.IsNullOrWhiteSpace(SearchString)
+            || dto.Name.Contains(SearchString, StringComparison.OrdinalIgnoreCase)
+            || dto.AlterName.Contains(SearchString, StringComparison.OrdinalIgnoreCase)
+            || dto.Description.Contains(SearchString, StringComparison.OrdinalIgnoreCase)
+            || dto.Brand?.Name.Contains(SearchString, StringComparison.OrdinalIgnoreCase) == true
+            || dto.Category.Name.Contains(SearchString, StringComparison.OrdinalIgnoreCase)
+            || dto.Status.Name.Contains(SearchString, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private async Task ShowCreateComponentDialog()
+    {
+        var parameters = new DialogParameters
+        {
+            ["AllStatuses"] = _allStatuses,
+            ["AllCategories"] = _allCategories,
+            ["AllBrands"] = _allBrands,
+            ["AllModels"] = _allModels,
+            ["AllPims"] = _allPims,
+            ["AllProtocols"] = _allProtocols,
+            ["OnCreate"] = EventCallback.Factory.Create<ComponentCreateDto>(this, HandleCreate)
+        };
+
+        var dialog = await DialogService.ShowAsync<ComponentDialog>("Create Component", parameters);
+        await dialog.Result;
+    }
+
+    private async Task ShowEditComponentDialog(ComponentDto component)
+    {
+        var parameters = new DialogParameters
+        {
+            ["Component"] = component,
+            ["AllStatuses"] = _allStatuses,
+            ["AllCategories"] = _allCategories,
+            ["AllBrands"] = _allBrands,
+            ["AllModels"] = _allModels,
+            ["AllPims"] = _allPims,
+            ["AllProtocols"] = _allProtocols,
+            ["OnUpdate"] = EventCallback.Factory.Create<ComponentUpdateDto>(this, HandleUpdate)
+        };
+
+        var dialog = await DialogService.ShowAsync<ComponentDialog>("Edit Component", parameters);
+        await dialog.Result;
+    }
+
+    private async Task HandleCreate(ComponentCreateDto createDto)
+    {
+        try
+        {
+            var response = await HttpClient.PostAsJsonAsync(ApiEndpoint, createDto);
+            response.EnsureSuccessStatusCode();
+            await LoadData();
+            Snackbar.Add("Component created successfully!", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error creating Component: {ex.Message}", Severity.Error);
+            throw; // Re-throw to let dialog handle it
+        }
+    }
+
+    private async Task HandleUpdate(ComponentUpdateDto updateDto)
+    {
+        try
+        {
+            var response = await HttpClient.PutAsJsonAsync($"{ApiEndpoint}/{updateDto.Id}", updateDto);
+            response.EnsureSuccessStatusCode();
+            await LoadData();
+            Snackbar.Add("Component updated successfully!", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error updating Component: {ex.Message}", Severity.Error);
+            throw; // Re-throw to let dialog handle it
+        }
+    }
+}

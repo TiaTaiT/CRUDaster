@@ -1,0 +1,118 @@
+﻿@using CRUDaster.Core.Application.DTOs
+@using CRUDaster.Comparers
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <DialogContent>
+        <MudForm @ref="form" @bind-IsValid="@_isValid">
+            <MudGrid>
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="_name"
+                                  Label="Name"
+                                  Required="true"
+                                  RequiredError="Name is required"
+                                  MaxLength="100" />
+                </MudItem>
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="_description"
+                                  Label="Description"
+                                  Required="true"
+                                  RequiredError="Description is required"
+                                  MaxLength="100" />
+                </MudItem>
+                <MudItem xs="12">
+                    <MudSelect T="ComponentDto"
+                               Label="Components"
+                               @bind-SelectedValues="_selectedComponents"
+                               MultiSelection="true"
+                               ToStringFunc="f => f.Name"
+                               Comparer="new PropertyEqualityComparer<ComponentDto, int>(f => f.Id)">
+                        @foreach (var Component in AllComponents)
+                        {
+                            <MudSelectItem Value="@Component">@Component.Name</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+            </MudGrid>
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary"
+                   Disabled="@(!_isValid || _processing)"
+                   OnClick="Submit">
+            @if (_processing)
+            {
+                <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                <MudText Class="ms-2">Processing</MudText>
+            }
+            else
+            {
+                @(_isEdit ? "Update" : "Create")
+            }
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; }
+
+    // Parameters passed from parent
+    [Parameter] public ProtocolDto? Protocol { get; set; }
+    [Parameter] public IEnumerable<ComponentDto> AllComponents { get; set; } = [];
+    [Parameter] public EventCallback<ProtocolCreateDto> OnCreate { get; set; }
+    [Parameter] public EventCallback<ProtocolUpdateDto> OnUpdate { get; set; }
+
+    private MudForm form;
+    private bool _isValid;
+    private bool _processing;
+    private bool _isEdit => Protocol != null;
+
+    private string _name = "";
+    private string _description = "";
+    private IEnumerable<ComponentDto> _selectedComponents = new List<ComponentDto>();
+
+    protected override void OnParametersSet()
+    {
+        if (_isEdit && Protocol != null)
+        {
+            _name = Protocol.Name;
+            _description = Protocol.Description;
+            _selectedComponents = AllComponents
+                .Where(h => Protocol.Components.Any(fh => fh.Id == h.Id))
+                .ToHashSet(new PropertyEqualityComparer<ComponentDto, int>(h => h.Id));
+        }
+    }
+
+    private async Task Submit()
+    {
+        _processing = true;
+        try
+        {
+            var selectedComponentIds = _selectedComponents.Select(h => h.Id);
+
+            if (_isEdit && Protocol != null)
+            {
+                var updateDto = new ProtocolUpdateDto(Protocol.Id, _name, _description, selectedComponentIds);
+                await OnUpdate.InvokeAsync(updateDto);
+            }
+            else
+            {
+                var createDto = new ProtocolCreateDto(_name, _description, selectedComponentIds);
+                await OnCreate.InvokeAsync(createDto);
+            }
+
+            MudDialog.Close(DialogResult.Ok(true));
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error saving Protocol: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _processing = false;
+        }
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+}
