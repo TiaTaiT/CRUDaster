@@ -46,28 +46,44 @@
                                   MaxLength="32" />
                 </MudItem>
                 <MudItem xs="12" sm="4">
+                    <MudSelect T="Unit"
+                               Label="Unit"
+                               @bind-Value="_selectedUnit"
+                               Variant="Variant.Outlined">
+                        <MudSelectItem Value="@Unit.Meters">Meters (m)</MudSelectItem>
+                        <MudSelectItem Value="@Unit.Centimeters">Centimeters (cm)</MudSelectItem>
+                        <MudSelectItem Value="@Unit.Millimeters">Millimeters (mm)</MudSelectItem>
+                    </MudSelect>
+                </MudItem>
+
+                <MudItem xs="12" sm="4">
                     <MudTextField @bind-Value="_length"
                                   Label="Length"
                                   Variant="Variant.Outlined"
                                   Type="InputType.Number"
                                   Adornment="Adornment.Start"
-                                  AdornmentIcon="@Icons.Material.Filled.LinearScale" />
+                                  AdornmentIcon="@Icons.Material.Filled.LinearScale"
+                                  AdornmentText="@UnitShortName(_selectedUnit)" />
                 </MudItem>
+
                 <MudItem xs="12" sm="4">
                     <MudTextField @bind-Value="_width"
                                   Label="Width"
                                   Variant="Variant.Outlined"
                                   Type="InputType.Number"
                                   Adornment="Adornment.Start"
-                                  AdornmentIcon="@Icons.Material.Filled.LinearScale" />
+                                  AdornmentIcon="@Icons.Material.Filled.LinearScale"
+                                  AdornmentText="@UnitShortName(_selectedUnit)" />
                 </MudItem>
+
                 <MudItem xs="12" sm="4">
                     <MudTextField @bind-Value="_height"
                                   Label="Height"
                                   Variant="Variant.Outlined"
                                   Type="InputType.Number"
                                   Adornment="Adornment.Start"
-                                  AdornmentIcon="@Icons.Material.Filled.LinearScale" />
+                                  AdornmentIcon="@Icons.Material.Filled.LinearScale"
+                                  AdornmentText="@UnitShortName(_selectedUnit)" />
                 </MudItem>
                 <MudItem xs="12" sm="6">
                     <MudSelect T="StatusDto"
@@ -203,6 +219,8 @@
     private double _length = 0;
     private double _width = 0;
     private double _height = 0;
+    private enum Unit { Meters, Centimeters, Millimeters }
+    private Unit _selectedUnit = Unit.Millimeters;
     private StatusDto? _selectedStatus;
     private CategoryDto? _selectedCategory;
     private BrandDto? _selectedBrand;
@@ -223,9 +241,12 @@
             _canHasChildren = Component.CanHasChildren;
             _virtual = Component.Virtual;
             _erpCode = Component.ErpCode;
-            _length = Component.Length;
-            _width = Component.Width;
-            _height = Component.Height;
+
+            // Convert from meters to selected unit for display
+            _length = ConvertFromMeters(Component.Length);
+            _width = ConvertFromMeters(Component.Width);
+            _height = ConvertFromMeters(Component.Height);
+
             _selectedStatus = AllStatuses.FirstOrDefault(s => s.Id == Component.Status.Id);
             _selectedCategory = AllCategories.FirstOrDefault(c => c.Id == Component.Category.Id);
             _selectedBrand = AllBrands.FirstOrDefault(b => b.Id == Component.Brand?.Id);
@@ -253,12 +274,44 @@
                isStatusValid && isCategoryValid && isBrandValid;
     }
 
+    private string UnitShortName(Unit u) =>
+    u switch
+    {
+        Unit.Centimeters => "cm",
+        Unit.Millimeters => "mm",
+        _ => "m"
+    };
+
+    private double ConvertToMeters(double value)
+    {
+        return _selectedUnit switch
+        {
+            Unit.Centimeters => value / 100.0,
+            Unit.Millimeters => value / 1000.0,
+            _ => value // meters
+        };
+    }
+
+    private double ConvertFromMeters(double valueInMeters)
+    {
+        return _selectedUnit switch
+        {
+            Unit.Centimeters => valueInMeters * 100.0,
+            Unit.Millimeters => valueInMeters * 1000.0,
+            _ => valueInMeters
+        };
+    }
+
     private async Task Submit()
     {
         _processing = true;
         try
         {
             var selectedProtocolIds = _selectedProtocols.Select(p => p.Id);
+
+            var lengthInMeters = ConvertToMeters(_length);
+            var widthInMeters = ConvertToMeters(_width);
+            var heightInMeters = ConvertToMeters(_height);
 
             if (_isEdit && Component != null)
             {
@@ -271,9 +324,9 @@
                     _canHasChildren,
                     _virtual,
                     _erpCode,
-                    _length,
-                    _width,
-                    _height,
+                    lengthInMeters,
+                    widthInMeters,
+                    heightInMeters,
                     _selectedStatus?.Id ?? 0,
                     _selectedCategory?.Id ?? 0,
                     _selectedBrand?.Id ?? 0,
@@ -293,9 +346,9 @@
                     _canHasChildren,
                     _virtual,
                     _erpCode,
-                    _length,
-                    _width,
-                    _height,
+                    lengthInMeters,
+                    widthInMeters,
+                    heightInMeters,
                     _selectedStatus?.Id ?? 0,
                     _selectedCategory?.Id ?? 0,
                     _selectedBrand?.Id ?? 0,
