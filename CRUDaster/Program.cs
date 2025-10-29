@@ -9,6 +9,11 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using MudBlazor.Services;
 
+// Instructs this specific application to prefer IPv4, fixing the timeout
+// without affecting the rest of the server.
+// It needs for Auth0
+AppContext.SetSwitch("System.Net.Http.SocketsHttpHandler.PreferIPv4OverIPv6", true);
+
 var builder = WebApplication.CreateBuilder(args);
 
 // AUTH0 Configuration
@@ -39,7 +44,7 @@ var apiBaseUrl = builder.Configuration["ApiBaseUrl"]
 
 builder.Services.AddHttpClient("ApiClient", client =>
 {
-    client.BaseAddress = new Uri(apiBaseUrl);
+    client.BaseAddress = new Uri(builder.Configuration["BaseUrl"]);
 })
 .AddHttpMessageHandler<CookieForwardingHandler>();
 
@@ -77,7 +82,13 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedFor |
+                       Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto
+});
+
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseAntiforgery();
