@@ -19,6 +19,13 @@ namespace CRUDaster.Core.Application.DTOs
         string Description,
         IEnumerable<FunctionalitySimpleDto> Functionalities);
 
+    public record HardwareCapsuleDto(
+        int Id,
+        string Serial,
+        string Description,
+        IEnumerable<FunctionalitySimpleDto> Functionalities,
+        string Capsule) : HardwareDto(Id, Serial, Description, Functionalities);
+
     public record HardwareSimpleDto(
         int Id,
         string Serial);

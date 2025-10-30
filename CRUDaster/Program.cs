@@ -1,5 +1,6 @@
 ﻿using Auth0.AspNetCore.Authentication;
 using CRUDaster.Components;
+using CRUDaster.Core.Domain.Models;
 using CRUDaster.ExternalServices;
 using CRUDaster.ExternalServices.Services;
 using CRUDaster.Infrastructure.Extensions;
@@ -32,7 +33,8 @@ builder.Services
 
 // Enable Role claim mapping
 builder.Services.AddScoped<IClaimsTransformation, RoleClaimsTransformation>();
-
+builder.Services.Configure<CapsuleSettings>(
+    builder.Configuration.GetSection("CapsuleConfig"));
 // Authorization & Authentication
 builder.Services.AddAuthorization();
 builder.Services.AddHttpContextAccessor();
