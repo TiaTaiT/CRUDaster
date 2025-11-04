@@ -8,5 +8,6 @@ namespace CRUDaster.Core.Application.Interfaces.DtoServices
         Task<HardwareDto?> GetBySerialAsync(string serial);
         Task<HardwareDto> CreateAsync(HardwareCreateDto productDto);
         Task UpdateAsync(HardwareUpdateDto productDto);
+        bool IsCapsuleAllowed(HardwareDto dto);
     }
 }

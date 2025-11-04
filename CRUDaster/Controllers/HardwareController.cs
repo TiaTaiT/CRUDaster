@@ -42,13 +42,16 @@ namespace CRUDaster.Controllers
             var hardware = await _hardwareService.GetBySerialAsync(serial);
             if (hardware == null)
                 return NotFound();
+
+            var isCapsuleAllowed = _hardwareService.IsCapsuleAllowed(hardware);
+
             var dto = new HardwareCapsuleDto
             (
                 hardware.Id,
                 hardware.Serial,
                 hardware.Description,
                 hardware.Functionalities,
-                JsonSerializer.Serialize(_capsule)
+                isCapsuleAllowed ? JsonSerializer.Serialize(_capsule) : ""
             );
             return Ok(dto);
         }

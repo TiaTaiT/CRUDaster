@@ -122,5 +122,17 @@ namespace CRUDaster.Core.Application.Services
             await _hardwareRepository.DeleteAsync(toDelete);
             await _hardwareRepository.SaveChangesAsync();
         }
+
+        public bool IsCapsuleAllowed(HardwareDto dto)
+        {
+            foreach (var feature in dto.Functionalities)
+            {
+                if (feature.Name.Equals("GOOGLEAPPACCESS"))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
     }
 }
