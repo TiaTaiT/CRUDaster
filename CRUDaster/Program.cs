@@ -5,7 +5,6 @@ using CRUDaster.ExternalServices;
 using CRUDaster.ExternalServices.Services;
 using CRUDaster.Infrastructure.Extensions;
 using CRUDaster.Infrastructure.Http;
-using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using MudBlazor.Services;
@@ -41,9 +40,6 @@ builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddTransient<CookieForwardingHandler>();
 // Add API `HttpClient` for same-origin cookie-auth (Default client)
-var apiBaseUrl = builder.Configuration["ApiBaseUrl"]
-    ?? throw new InvalidOperationException("Missing ApiBaseUrl in configuration.");
-
 builder.Services.AddHttpClient("ApiClient", client =>
 {
     client.BaseAddress = new Uri(builder.Configuration["BaseUrl"]);
@@ -67,15 +63,6 @@ builder.Services.AddMudServices();
 builder.Services.AddMudBlazorDialog();
 
 var app = builder.Build();
-
-var forwardOptions = new ForwardedHeadersOptions
-{
-    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
-};
-forwardOptions.KnownNetworks.Clear(); // allows any network
-forwardOptions.KnownProxies.Clear();  // allows any proxy
-app.UseForwardedHeaders(forwardOptions);
-
 
 // HTTP pipeline
 if (!app.Environment.IsDevelopment())
