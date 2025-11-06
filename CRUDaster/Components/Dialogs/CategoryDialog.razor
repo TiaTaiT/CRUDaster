@@ -54,13 +54,13 @@
 
     private string _name = "";
     private string _description = "";
-    private string _content = "";
 
     protected override void OnParametersSet()
     {
         if (_isEdit && Dto != null)
         {
             _name = Dto.Name;
+            _description = Dto.Description;
         }
     }
 

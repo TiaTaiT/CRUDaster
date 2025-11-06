@@ -61,7 +61,7 @@ namespace CRUDaster.Core.Application.Services
         {
             var existingItem = await _categoryRepository.GetByIdAsync(dto.Id) ?? throw new KeyNotFoundException($"Item with ID {dto.Id} not found.");
             existingItem.Name = dto.Name ?? existingItem.Name;
-            existingItem.Name = dto.Description ?? existingItem.Description;
+            existingItem.Description = dto.Description ?? existingItem.Description;
 
             await _categoryRepository.UpdateAsync(existingItem);
             await _categoryRepository.SaveChangesAsync();
