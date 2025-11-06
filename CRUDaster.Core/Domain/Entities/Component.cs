@@ -19,5 +19,6 @@
         public Model? Model { get; set; }
         public Pim? Pim { get; set; }
         public ICollection<Protocol> Protocols { get; set; } = [];
+        public bool HasSerial { get; set; }
     }
 }

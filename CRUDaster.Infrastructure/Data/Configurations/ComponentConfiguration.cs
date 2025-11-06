@@ -87,6 +87,9 @@ namespace CRUDaster.Infrastructure.Data.Configurations
                     j => j.HasOne<Component>().WithMany().HasForeignKey("ComponentId"),
                     j => j.HasKey("ProtocolId", "ComponentId")
                 );
+
+            builder.Property(p => p.HasSerial)
+                .HasDefaultValue(false);
         }
     }
 }

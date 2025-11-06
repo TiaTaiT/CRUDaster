@@ -21,6 +21,7 @@ namespace CRUDaster.Core.Application.DTOs
         Model? Model,
         Pim? Pim,
         ICollection<ProtocolSimpleDto> ProtocolDtos,
+        bool HasSerial,
         string CreatorId,
         DateTime CreatedAt,
         string? UpdaterId,
@@ -35,7 +36,8 @@ namespace CRUDaster.Core.Application.DTOs
         string? BrandName,
         int CategoryId,
         string ErpCode,
-        ICollection<int> ProtocolsId
+        ICollection<int> ProtocolsId,
+        bool HasSerial
     );
 
     public record ComponentSimpleDto(
@@ -59,7 +61,8 @@ namespace CRUDaster.Core.Application.DTOs
         [Required] int BrandId,
         int ModelId,
         int PimId,
-        IEnumerable<int> ProtocolIds);
+        IEnumerable<int> ProtocolIds,
+        bool HasSerial);
 
     public record ComponentUpdateDto(
         [Required] int Id,
@@ -78,5 +81,6 @@ namespace CRUDaster.Core.Application.DTOs
         int BrandId,
         int ModelId,
         int PimId,
-        IEnumerable<int> ProtocolIds);
+        IEnumerable<int> ProtocolIds,
+        bool HasSerial);
 }

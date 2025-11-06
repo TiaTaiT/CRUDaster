@@ -57,6 +57,7 @@ namespace CRUDaster.Core.Application.Services
                 Model = model,
                 Pim = pim,
                 Protocols = protocols,
+                HasSerial = dto.HasSerial,
                 CreatorId = userId,
                 CreatedAt = DateTime.UtcNow,
             };
@@ -89,6 +90,7 @@ namespace CRUDaster.Core.Application.Services
                 createdItem.Model,
                 createdItem.Pim,
                 simpleProtocolDtos,
+                createdItem.HasSerial,
                 createdItem.CreatorId,
                 createdItem.CreatedAt,
                 createdItem.UpdaterId,
@@ -98,7 +100,9 @@ namespace CRUDaster.Core.Application.Services
 
         public async Task DeleteAsync(int id)
         {
-            throw new NotImplementedException();
+            var toDelete = await _componentRepository.GetByIdAsync(id) ?? throw new KeyNotFoundException($"Component with ID {id} not found.");
+            await _componentRepository.DeleteAsync(toDelete);
+            await _componentRepository.SaveChangesAsync();
         }
 
         public async Task<IEnumerable<ComponentDto>> GetAllAsync()
@@ -123,24 +127,72 @@ namespace CRUDaster.Core.Application.Services
                 Brand: f.Brand,
                 Model: f.Model,
                 Pim: f.Pim,
+                ProtocolDtos: [.. f.Protocols.Select(h => new ProtocolSimpleDto(h.Id, h.Name))],
+                HasSerial: f.HasSerial,
                 CreatorId: f.CreatorId,
                 CreatedAt: f.CreatedAt,
                 UpdatedAt: f.UpdatedAt,
-                UpdaterId: f.UpdaterId,
-                ProtocolDtos: f.Protocols
-                    .Select(h => new ProtocolSimpleDto(h.Id, h.Name))
-                    .ToList()
+                UpdaterId: f.UpdaterId
             ));
         }
 
         public async Task<ComponentDto?> GetByIdAsync(int id)
         {
-            throw new NotImplementedException();
+            var f = await _componentRepository.GetByIdAsync(id);
+            if (f == null) return null;
+
+            return new ComponentDto(
+                Id: f.Id,
+                Name: f.Name,
+                AlterName: f.AlterName,
+                Description: f.Description,
+                VendorCode: f.VendorCode,
+                CanHasChildren: f.CanHasChildren,
+                Virtual: f.Virtual,
+                ErpCode: f.ErpCode,
+                Length: f.Length,
+                Width: f.Width,
+                Height: f.Height,
+                Status: f.Status,
+                Category: f.Category,
+                Brand: f.Brand,
+                Model: f.Model,
+                Pim: f.Pim,
+                ProtocolDtos: [.. f.Protocols.Select(h => new ProtocolSimpleDto(h.Id, h.Name))],
+                HasSerial: f.HasSerial,
+                CreatorId: f.CreatorId,
+                CreatedAt: f.CreatedAt,
+                UpdatedAt: f.UpdatedAt,
+                UpdaterId: f.UpdaterId
+            );
         }
 
         public async Task UpdateAsync(ComponentUpdateDto dto)
         {
-            throw new NotImplementedException();
+            var existingComponent = await _componentRepository.GetByIdAsync(dto.Id)
+                ?? throw new KeyNotFoundException($"Protocol with ID {dto.Id} not found.");
+            if (!string.IsNullOrEmpty(dto.Name))
+            {
+                existingComponent.Name = dto.Name;
+            }
+            if (!string.IsNullOrEmpty(dto.Description))
+            {
+                existingComponent.Description = dto.Description;
+            }
+
+            if (dto.ProtocolIds != null)
+            {
+                existingComponent.Protocols.Clear();
+                foreach (var protocolId in dto.ProtocolIds.Distinct())
+                {
+                    var protocol = await _protocolRepository.GetByIdAsync(protocolId)
+                        ?? throw new KeyNotFoundException($"Protocol with ID {protocolId} not found.");
+                    existingComponent.Protocols.Add(protocol);
+                }
+            }
+
+            await _componentRepository.UpdateAsync(existingComponent);
+            await _componentRepository.SaveChangesAsync();
         }
     }
 }
