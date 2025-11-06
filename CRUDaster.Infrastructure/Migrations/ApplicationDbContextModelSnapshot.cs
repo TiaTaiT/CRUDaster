@@ -156,6 +156,11 @@ namespace CRUDaster.Infrastructure.Migrations
                         .HasColumnType("boolean")
                         .HasDefaultValue(true);
 
+                    b.Property<bool>("CanMountInCabinet")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true);
+
                     b.Property<int>("CategoryId")
                         .HasColumnType("integer");
 

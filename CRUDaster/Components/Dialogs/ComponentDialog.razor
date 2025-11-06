@@ -34,15 +34,19 @@
                 </MudItem>
                 <MudItem xs="12" sm="6">
                     <MudSwitch @bind-Value="_canHasChildren"
-                               Label="Can Have Children" />
+                               Label="Can has children" />
                 </MudItem>
                 <MudItem xs="12" sm="6">
                     <MudSwitch @bind-Value="_virtual"
-                               Label="Virtual" />
+                               Label="Is virtual" />
                 </MudItem>
                 <MudItem xs="12" sm="6">
                     <MudSwitch @bind-Value="_hasSerial"
                                Label="Has serial" />
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudSwitch @bind-Value="_canMountInCabinet"
+                               Label="Can mount in cabinet" />
                 </MudItem>
                 <MudItem xs="12">
                     <MudTextField @bind-Value="_erpCode"
@@ -220,6 +224,7 @@
     private bool _canHasChildren = false;
     private bool _virtual = false;
     private bool _hasSerial = false;
+    private bool _canMountInCabinet = true;
     private string _erpCode = "";
     private double _length = 0;
     private double _width = 0;
@@ -338,7 +343,8 @@
                     _selectedModel?.Id ?? 0,
                     _selectedPim?.Id ?? 0,
                     selectedProtocolIds,
-                    _hasSerial
+                    _hasSerial,
+                    _canMountInCabinet
                 );
                 await OnUpdate.InvokeAsync(updateDto);
             }
@@ -361,7 +367,8 @@
                     _selectedModel?.Id ?? 0,
                     _selectedPim?.Id ?? 0,
                     selectedProtocolIds,
-                    _hasSerial
+                    _hasSerial,
+                    _canMountInCabinet
                 );
                 await OnCreate.InvokeAsync(createDto);
             }

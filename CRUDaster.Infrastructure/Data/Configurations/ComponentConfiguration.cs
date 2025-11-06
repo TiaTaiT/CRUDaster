@@ -90,6 +90,9 @@ namespace CRUDaster.Infrastructure.Data.Configurations
 
             builder.Property(p => p.HasSerial)
                 .HasDefaultValue(false);
+
+            builder.Property(p => p.CanMountInCabinet)
+                .HasDefaultValue(true);
         }
     }
 }
