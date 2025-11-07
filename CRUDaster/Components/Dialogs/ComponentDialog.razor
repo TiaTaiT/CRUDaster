@@ -7,7 +7,7 @@
         <MudForm @ref="form" @bind-IsValid="@_isValid">
             <MudGrid>
                 <MudItem xs="12">
-                    <MudTextField @bind-Value="_name"
+                    <MudTextField @bind-Value="Name"
                                   Label="Name"
                                   Required="true"
                                   RequiredError="Name is required"
@@ -32,6 +32,11 @@
                                   RequiredError="Vendor Code is required"
                                   MaxLength="255" />
                 </MudItem>
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="_erpCode"
+                                  Label="ERP Code"
+                                  MaxLength="32" />
+                </MudItem>
                 <MudItem xs="12" sm="6">
                     <MudSwitch @bind-Value="_canHasChildren"
                                Label="Can has children" />
@@ -48,11 +53,7 @@
                     <MudSwitch @bind-Value="_canMountInCabinet"
                                Label="Can mount in cabinet" />
                 </MudItem>
-                <MudItem xs="12">
-                    <MudTextField @bind-Value="_erpCode"
-                                  Label="ERP Code"
-                                  MaxLength="32" />
-                </MudItem>
+                
                 <MudItem xs="12" sm="4">
                     <MudSelect T="Unit"
                                Label="Unit"
@@ -217,7 +218,6 @@
     private bool _processing;
     private bool _isEdit => Component != null;
 
-    private string _name = "";
     private string _alterName = "";
     private string _description = "";
     private string _vendorCode = "";
@@ -239,6 +239,18 @@
     private IEnumerable<ProtocolDto> _selectedProtocols = new List<ProtocolDto>();
 
     private bool _isFormValid => IsRequiredFieldsValid();
+
+
+    private string _name;
+    private string Name
+    {
+        get => _name;
+        set
+        {
+            _name = value?.ToUpperInvariant();
+            StateHasChanged();
+        }
+    }
 
     protected override void OnParametersSet()
     {
