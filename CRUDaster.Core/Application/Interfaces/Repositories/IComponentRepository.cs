@@ -4,6 +4,6 @@ namespace CRUDaster.Core.Application.Interfaces.Repositories
 {
     public interface IComponentRepository : IRepository<Component>
     {
-        Task<IEnumerable<Component>> GetProductsByNameAsync(string name);
+        Task<IEnumerable<Component>> GetComponentByNameAsync(string name);
     }
 }

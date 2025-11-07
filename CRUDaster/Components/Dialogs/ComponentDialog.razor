@@ -58,15 +58,15 @@
                                Label="Unit"
                                @bind-Value="_selectedUnit"
                                Variant="Variant.Outlined">
-                        <MudSelectItem Value="@Unit.Meters">Meters (m)</MudSelectItem>
-                        <MudSelectItem Value="@Unit.Centimeters">Centimeters (cm)</MudSelectItem>
-                        <MudSelectItem Value="@Unit.Millimeters">Millimeters (mm)</MudSelectItem>
+                        <MudSelectItem Value="@Unit.Meters">m</MudSelectItem>
+                        <MudSelectItem Value="@Unit.Centimeters">cm</MudSelectItem>
+                        <MudSelectItem Value="@Unit.Millimeters">mm</MudSelectItem>
                     </MudSelect>
                 </MudItem>
 
                 <MudItem xs="12" sm="4">
-                    <MudTextField @bind-Value="_length"
-                                  Label="Length"
+                    <MudTextField @bind-Value="_width"
+                                  Label="Width (X)"
                                   Variant="Variant.Outlined"
                                   Type="InputType.Number"
                                   Adornment="Adornment.Start"
@@ -75,18 +75,18 @@
                 </MudItem>
 
                 <MudItem xs="12" sm="4">
-                    <MudTextField @bind-Value="_width"
-                                  Label="Width"
+                    <MudTextField @bind-Value="_length"
+                                  Label="Length (Y)"
                                   Variant="Variant.Outlined"
                                   Type="InputType.Number"
                                   Adornment="Adornment.Start"
                                   AdornmentIcon="@Icons.Material.Filled.LinearScale"
                                   AdornmentText="@UnitShortName(_selectedUnit)" />
-                </MudItem>
+                </MudItem>            
 
                 <MudItem xs="12" sm="4">
                     <MudTextField @bind-Value="_height"
-                                  Label="Height"
+                                  Label="Height (Z)"
                                   Variant="Variant.Outlined"
                                   Type="InputType.Number"
                                   Adornment="Adornment.Start"

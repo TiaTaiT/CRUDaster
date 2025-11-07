@@ -14,6 +14,8 @@ namespace CRUDaster.Infrastructure.Data.Repositories
                 .Include(h => h.Protocols)
                 .Include(h => h.Status)
                 .Include(h => h.Brand)
+                .Include(h => h.Pim)
+                .Include(h => h.Model)
                 .ToListAsync();
         }
 
@@ -31,7 +33,7 @@ namespace CRUDaster.Infrastructure.Data.Repositories
                 .FirstOrDefaultAsync();
         }
 
-        public async Task<IEnumerable<Component>> GetProductsByNameAsync(string name)
+        public async Task<IEnumerable<Component>> GetComponentByNameAsync(string name)
         {
             return await _dbSet
                 .Where(p => p.Name.Contains(name))
@@ -40,6 +42,8 @@ namespace CRUDaster.Infrastructure.Data.Repositories
                 .Include(h => h.Protocols)
                 .Include(h => h.Status)
                 .Include(h => h.Brand)
+                .Include(h => h.Pim)
+                .Include(h => h.Model)
                 .ToListAsync();
         }
     }
