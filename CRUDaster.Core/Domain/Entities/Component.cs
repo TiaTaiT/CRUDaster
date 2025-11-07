@@ -21,5 +21,6 @@
         public ICollection<Protocol> Protocols { get; set; } = [];
         public bool HasSerial { get; set; }
         public bool CanMountInCabinet { get; set; }
+        public string DocNumber { get; set; } = string.Empty;
     }
 }

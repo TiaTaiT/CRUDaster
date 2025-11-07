@@ -93,6 +93,9 @@ namespace CRUDaster.Infrastructure.Data.Configurations
 
             builder.Property(p => p.CanMountInCabinet)
                 .HasDefaultValue(true);
+
+            builder.Property(p => p.DocNumber)
+                .HasMaxLength(255);
         }
     }
 }

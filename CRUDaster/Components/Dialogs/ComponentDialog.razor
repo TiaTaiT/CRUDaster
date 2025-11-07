@@ -28,14 +28,17 @@
                 <MudItem xs="12">
                     <MudTextField @bind-Value="_vendorCode"
                                   Label="Vendor Code"
-                                  Required="true"
-                                  RequiredError="Vendor Code is required"
                                   MaxLength="255" />
                 </MudItem>
                 <MudItem xs="12">
+                    <MudTextField @bind-Value="_docNumber"
+                                  Label="Document number"
+                                  MaxLength="64" />
+                </MudItem>
+                <MudItem xs="12">
                     <MudTextField @bind-Value="_erpCode"
-                                  Label="ERP Code"
-                                  MaxLength="32" />
+                                    Label="ERP Code"
+                                    MaxLength="32" />
                 </MudItem>
                 <MudItem xs="12" sm="6">
                     <MudSwitch @bind-Value="_canHasChildren"
@@ -54,45 +57,40 @@
                                Label="Can mount in cabinet" />
                 </MudItem>
                 
-                <MudItem xs="12" sm="4">
-                    <MudSelect T="Unit"
-                               Label="Unit"
-                               @bind-Value="_selectedUnit"
-                               Variant="Variant.Outlined">
-                        <MudSelectItem Value="@Unit.Meters">m</MudSelectItem>
-                        <MudSelectItem Value="@Unit.Centimeters">cm</MudSelectItem>
-                        <MudSelectItem Value="@Unit.Millimeters">mm</MudSelectItem>
-                    </MudSelect>
-                </MudItem>
+                <MudItem xs="12">
+                    <MudGrid>
+                        <MudItem xs="12" sm="3">
+                            <MudSelect T="Unit"
+                                       Label="Unit"
+                                       @bind-Value="_selectedUnit"
+                                       Variant="Variant.Outlined">
+                                <MudSelectItem Value="@Unit.Meters">m</MudSelectItem>
+                                <MudSelectItem Value="@Unit.Centimeters">cm</MudSelectItem>
+                                <MudSelectItem Value="@Unit.Millimeters">mm</MudSelectItem>
+                            </MudSelect>
+                        </MudItem>
 
-                <MudItem xs="12" sm="4">
-                    <MudTextField @bind-Value="_width"
-                                  Label="Width (X)"
-                                  Variant="Variant.Outlined"
-                                  Type="InputType.Number"
-                                  Adornment="Adornment.Start"
-                                  AdornmentIcon="@Icons.Material.Filled.LinearScale"
-                                  AdornmentText="@UnitShortName(_selectedUnit)" />
-                </MudItem>
+                        <MudItem xs="12" sm="3">
+                            <MudTextField @bind-Value="_width"
+                                          Label="Width (X)"
+                                          Variant="Variant.Outlined"
+                                          Type="InputType.Number" />
+                        </MudItem>
 
-                <MudItem xs="12" sm="4">
-                    <MudTextField @bind-Value="_length"
-                                  Label="Length (Y)"
-                                  Variant="Variant.Outlined"
-                                  Type="InputType.Number"
-                                  Adornment="Adornment.Start"
-                                  AdornmentIcon="@Icons.Material.Filled.LinearScale"
-                                  AdornmentText="@UnitShortName(_selectedUnit)" />
-                </MudItem>            
+                        <MudItem xs="12" sm="3">
+                            <MudTextField @bind-Value="_length"
+                                          Label="Length (Y)"
+                                          Variant="Variant.Outlined"
+                                          Type="InputType.Number" />
+                        </MudItem>
 
-                <MudItem xs="12" sm="4">
-                    <MudTextField @bind-Value="_height"
-                                  Label="Height (Z)"
-                                  Variant="Variant.Outlined"
-                                  Type="InputType.Number"
-                                  Adornment="Adornment.Start"
-                                  AdornmentIcon="@Icons.Material.Filled.LinearScale"
-                                  AdornmentText="@UnitShortName(_selectedUnit)" />
+                        <MudItem xs="12" sm="3">
+                            <MudTextField @bind-Value="_height"
+                                          Label="Height (Z)"
+                                          Variant="Variant.Outlined"
+                                          Type="InputType.Number" />
+                        </MudItem>
+                    </MudGrid>
                 </MudItem>
                 <MudItem xs="12" sm="6">
                     <MudSelect T="StatusDto"
@@ -226,6 +224,7 @@
     private bool _hasSerial = false;
     private bool _canMountInCabinet = true;
     private string _erpCode = "";
+    private string _docNumber = "";
     private double _length = 0;
     private double _width = 0;
     private double _height = 0;
@@ -263,7 +262,7 @@
             _canHasChildren = Component.CanHasChildren;
             _virtual = Component.Virtual;
             _erpCode = Component.ErpCode;
-
+            _docNumber = Component.DocNumber;
             // Convert from meters to selected unit for display
             _length = ConvertFromMeters(Component.Length);
             _width = ConvertFromMeters(Component.Width);
@@ -346,6 +345,7 @@
                     _canHasChildren,
                     _virtual,
                     _erpCode,
+                    _docNumber,
                     lengthInMeters,
                     widthInMeters,
                     heightInMeters,
@@ -370,6 +370,7 @@
                     _canHasChildren,
                     _virtual,
                     _erpCode,
+                    _docNumber,
                     lengthInMeters,
                     widthInMeters,
                     heightInMeters,
