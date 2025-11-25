@@ -19,6 +19,15 @@ namespace CRUDaster.Controllers
             return Ok(components);
         }
 
+        // GET: api/component/fortables
+        [AllowAnonymous]
+        [HttpGet("fortables")]
+        public async Task<ActionResult<IEnumerable<ComponentForTablesDto>>> GetAllForTables() 
+        {
+            var components = await _componentService.GetAllForTablesAsync();
+            return Ok(components);
+        }
+
         // GET: api/component/{id}
         [HttpGet("{id}")]
         public async Task<ActionResult<ComponentDto>> GetById(int id)

@@ -142,6 +142,23 @@ namespace CRUDaster.Core.Application.Services
             ));
         }
 
+        public async Task<IEnumerable<ComponentForTablesDto>> GetAllForTablesAsync()
+        {
+            var allComponents = await _componentRepository.GetAllAsync();
+            return allComponents.Select(f => new ComponentForTablesDto(
+                Id: f.Id,
+                Name: f.Name,
+                AlterName: f.AlterName,
+                Description: f.Description,
+                ErpCode: f.ErpCode,
+                CategoryId: f.Category.Id,
+                BrandName: f.Brand?.Name,
+                Protocols: [.. f.Protocols.Select(h => new ProtocolSimpleDto(h.Id, h.Name))],
+                HasSerial: f.HasSerial,
+                CanMountInCabinet: f.CanMountInCabinet
+            ));
+        }
+
         public async Task<ComponentDto?> GetByIdAsync(int id)
         {
             var f = await _componentRepository.GetByIdAsync(id);
@@ -187,6 +204,25 @@ namespace CRUDaster.Core.Application.Services
             {
                 existingComponent.Description = dto.Description;
             }
+            existingComponent.AlterName = dto.AlterName;
+            existingComponent.Brand = (await _brandRepository.GetByIdAsync(dto.BrandId)) ?? throw new KeyNotFoundException($"Brand with ID {dto.BrandId} not found");
+            existingComponent.Status = (await _statusRepository.GetByIdAsync(dto.StatusId)) ?? throw new KeyNotFoundException($"Status with ID {dto.StatusId} not found");
+            existingComponent.Category = (await _categoryRepository.GetByIdAsync(dto.CategoryId)) ?? throw new KeyNotFoundException($"Category with ID {dto.CategoryId} not found");
+
+
+            if (dto.ModelId != null && dto.ModelId > 0)
+            {
+                existingComponent.Model = (await _modelRepository.GetByIdAsync((int)dto.ModelId)) ?? throw new KeyNotFoundException($"Model with ID {dto.ModelId} not found");
+            }
+            
+            existingComponent.DocNumber = dto.DocNumber;
+            existingComponent.HasSerial = dto.HasSerial;
+            existingComponent.CanHasChildren = dto.CanHasChildren;
+            existingComponent.CanMountInCabinet = dto.CanMountInCabinet;
+            existingComponent.Height = dto.Height;
+            existingComponent.Width = dto.Width;
+            existingComponent.Length = dto.Length;
+            existingComponent.ErpCode = dto.ErpCode;
 
             if (dto.ProtocolIds != null)
             {

@@ -38,7 +38,7 @@ namespace CRUDaster.Core.Application.DTOs
         string? BrandName,
         int CategoryId,
         string ErpCode,
-        ICollection<int> ProtocolsId,
+        ICollection<ProtocolSimpleDto> Protocols,
         bool HasSerial,
         bool CanMountInCabinet
     );
@@ -85,8 +85,8 @@ namespace CRUDaster.Core.Application.DTOs
         int StatusId,
         int CategoryId,
         int BrandId,
-        int ModelId,
-        int PimId,
+        int? ModelId,
+        int? PimId,
         IEnumerable<int> ProtocolIds,
         bool HasSerial,
         bool CanMountInCabinet);

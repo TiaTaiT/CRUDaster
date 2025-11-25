@@ -7,5 +7,6 @@ namespace CRUDaster.Core.Application.Interfaces.DtoServices
         Task<ComponentDto?> GetByIdAsync(int id);
         Task<ComponentDto> CreateAsync(ComponentCreateDto dto);
         Task UpdateAsync(ComponentUpdateDto dto);
+        Task<IEnumerable<ComponentForTablesDto>> GetAllForTablesAsync();
     }
 }
