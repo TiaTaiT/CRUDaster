@@ -52,7 +52,7 @@ namespace CRUDaster.Core.Application.DTOs
         [Required][StringLength(255)] string Name,
         [StringLength(255)] string AlterName,
         [Required][StringLength(255)] string Description,
-        [Required][StringLength(255)] string VendorCode,
+        [StringLength(255)] string VendorCode,
         bool CanHasChildren,
         bool Virtual,
         [StringLength(32)] string ErpCode,
