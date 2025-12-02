@@ -209,12 +209,16 @@ namespace CRUDaster.Core.Application.Services
             existingComponent.Status = (await _statusRepository.GetByIdAsync(dto.StatusId)) ?? throw new KeyNotFoundException($"Status with ID {dto.StatusId} not found");
             existingComponent.Category = (await _categoryRepository.GetByIdAsync(dto.CategoryId)) ?? throw new KeyNotFoundException($"Category with ID {dto.CategoryId} not found");
 
-
             if (dto.ModelId != null && dto.ModelId > 0)
             {
                 existingComponent.Model = (await _modelRepository.GetByIdAsync((int)dto.ModelId)) ?? throw new KeyNotFoundException($"Model with ID {dto.ModelId} not found");
             }
-            
+
+            if (dto.PimId != null && dto.PimId > 0)
+            {
+                existingComponent.Pim = (await _pimRepository.GetByIdAsync((int)dto.PimId)) ?? throw new KeyNotFoundException($"Model with ID {dto.PimId} not found");
+            }
+
             existingComponent.DocNumber = dto.DocNumber;
             existingComponent.HasSerial = dto.HasSerial;
             existingComponent.CanHasChildren = dto.CanHasChildren;
@@ -223,7 +227,7 @@ namespace CRUDaster.Core.Application.Services
             existingComponent.Width = dto.Width;
             existingComponent.Length = dto.Length;
             existingComponent.ErpCode = dto.ErpCode;
-
+            
             if (dto.ProtocolIds != null)
             {
                 existingComponent.Protocols.Clear();
