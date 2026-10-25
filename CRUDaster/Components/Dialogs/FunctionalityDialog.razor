@@ -70,7 +70,7 @@
 
     private string _name = "";
     private string _description = "";
-    private IEnumerable<HardwareDto> _selectedHardwares = new List<HardwareDto>();
+    private IReadOnlyCollection<HardwareDto> _selectedHardwares = new List<HardwareDto>();
 
     protected override void OnParametersSet()
     {

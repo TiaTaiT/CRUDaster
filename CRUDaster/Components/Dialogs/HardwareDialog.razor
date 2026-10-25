@@ -70,7 +70,7 @@
 
     private string _serial = "";
     private string _description = "";
-    private IEnumerable<FunctionalityDto> _selectedFunctionalities = new List<FunctionalityDto>();
+    private IReadOnlyCollection<FunctionalityDto> _selectedFunctionalities = new List<FunctionalityDto>();
 
     protected override void OnParametersSet()
     {

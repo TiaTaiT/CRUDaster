@@ -235,7 +235,7 @@
     private BrandDto? _selectedBrand;
     private ModelDto? _selectedModel;
     private PimDto? _selectedPim;
-    private IEnumerable<ProtocolDto> _selectedProtocols = new List<ProtocolDto>();
+    private IReadOnlyCollection<ProtocolDto> _selectedProtocols = new List<ProtocolDto>();
 
     private bool _isFormValid => IsRequiredFieldsValid();
 

@@ -70,7 +70,7 @@
 
     private string _name = "";
     private string _description = "";
-    private IEnumerable<ComponentDto> _selectedComponents = new List<ComponentDto>();
+    private IReadOnlyCollection<ComponentDto> _selectedComponents = new List<ComponentDto>();
 
     protected override void OnParametersSet()
     {
